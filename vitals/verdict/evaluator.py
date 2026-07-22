@@ -30,6 +30,7 @@ def select_exemplars(
     behavior_z: float,
     worst_count: int = 2,
     median_count: int = 1,
+    signal: CalibratedSignal | None = None,
 ) -> tuple[Exemplar, ...]:
     """Select worst and median exemplars from span records (spec §4.5, §9)."""
     if not recs:
@@ -37,6 +38,11 @@ def select_exemplars(
 
     sorted_recs = sorted(recs, key=lambda r: r.behavior_psi, reverse=True)
     exemplars: list[Exemplar] = []
+
+    def _get_sigma(r: SpanRecord) -> float:
+        if signal is not None and signal.calibrated():
+            return signal.z(r.behavior_psi)
+        return behavior_z
 
     # Worst exemplars
     actual_worst_n = min(worst_count, len(sorted_recs))
@@ -47,7 +53,7 @@ def select_exemplars(
                 trace_id=r.trace_id,
                 span_id=r.span_id,
                 output_excerpt=r.output_excerpt,
-                behavior_sigma=behavior_z,
+                behavior_sigma=_get_sigma(r),
             )
         )
 
@@ -61,7 +67,7 @@ def select_exemplars(
                 trace_id=med_rec.trace_id,
                 span_id=med_rec.span_id,
                 output_excerpt=med_rec.output_excerpt,
-                behavior_sigma=behavior_z,
+                behavior_sigma=_get_sigma(med_rec),
             )
         )
 
@@ -182,7 +188,11 @@ def evaluate_scope_version(
             falsifier=f"would resolve if sample size reaches {cfg.min_samples}",
             warming_progress=None,
             exemplars=select_exemplars(
-                recs, behavior_z, cfg.exemplars_worst, cfg.exemplars_median
+                recs,
+                behavior_z,
+                cfg.exemplars_worst,
+                cfg.exemplars_median,
+                signal=scope.signals.get("behavior"),
             ),
             input_sigma=input_z,
         )
@@ -217,7 +227,11 @@ def evaluate_scope_version(
             falsifier="would resolve if input drift drops below 3σ",
             warming_progress=None,
             exemplars=select_exemplars(
-                recs, behavior_z, cfg.exemplars_worst, cfg.exemplars_median
+                recs,
+                behavior_z,
+                cfg.exemplars_worst,
+                cfg.exemplars_median,
+                signal=scope.signals.get("behavior"),
             ),
             input_sigma=input_z,
         )
@@ -289,7 +303,13 @@ def evaluate_scope_version(
     else:
         falsifier = f"would flip to CHANGED at behavior >=3σ (currently {behavior_z:.1f}σ)"
 
-    exemplars = select_exemplars(recs, behavior_z, cfg.exemplars_worst, cfg.exemplars_median)
+    exemplars = select_exemplars(
+        recs,
+        behavior_z,
+        cfg.exemplars_worst,
+        cfg.exemplars_median,
+        signal=scope.signals.get("behavior"),
+    )
 
     return Verdict(
         verdict_id=uuid.uuid4().hex[:16],
