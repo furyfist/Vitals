@@ -1,12 +1,12 @@
 {
-  "title": "Vitals \u2014 Release Compare",
-  "description": "Quality and cost split by service.version. Catch the release that regressed.",
+  "title": "Vitals — Release Compare",
+  "description": "Verdict state and normalized sigmas split by service.version.",
   "tags": [
     "vitals",
     "release",
-    "genai"
+    "verdict"
   ],
-  "version": "v4",
+  "version": "v5",
   "layout": [
     {
       "i": "1",
@@ -40,8 +40,8 @@
   "widgets": [
     {
       "id": "1",
-      "title": "Quality score by version",
-      "description": "Per-release quality. The poisoned v2 line drops here.",
+      "title": "Verdict state by version",
+      "description": "0=warming, 1=steady, 2=changed, 3=inconclusive",
       "panelTypes": "graph",
       "isStacked": false,
       "opacity": "1",
@@ -62,15 +62,15 @@
               "queryName": "A",
               "expression": "A",
               "disabled": false,
-              "aggregateOperator": "avg",
+              "aggregateOperator": "max",
               "aggregateAttribute": {
-                "key": "gen_ai.evaluation.score",
+                "key": "vitals.verdict.state",
                 "dataType": "float64",
                 "type": "Gauge",
                 "isColumn": true
               },
-              "timeAggregation": "avg",
-              "spaceAggregation": "avg",
+              "timeAggregation": "max",
+              "spaceAggregation": "max",
               "filters": {
                 "op": "AND",
                 "items": []
@@ -97,14 +97,14 @@
     },
     {
       "id": "2",
-      "title": "Drift by version",
-      "description": "Per-release drift from the shared healthy baseline.",
+      "title": "Behavior sigma by version",
+      "description": "Signed behavior delta in sigma units against baseline variance.",
       "panelTypes": "graph",
       "isStacked": false,
       "opacity": "1",
       "nullZeroValues": "zero",
       "timePreferance": "GLOBAL_TIME",
-      "yAxisUnit": "",
+      "yAxisUnit": "σ",
       "softMax": null,
       "softMin": null,
       "fillSpans": false,
@@ -121,7 +121,7 @@
               "disabled": false,
               "aggregateOperator": "avg",
               "aggregateAttribute": {
-                "key": "gen_ai.evaluation.drift",
+                "key": "vitals.verdict.behavior_sigma",
                 "dataType": "float64",
                 "type": "Gauge",
                 "isColumn": true
@@ -154,14 +154,14 @@
     },
     {
       "id": "3",
-      "title": "Cost velocity by version",
-      "description": "Spend-rate per release.",
+      "title": "Cost sigma by version",
+      "description": "Signed cost delta in sigma units against baseline variance.",
       "panelTypes": "graph",
       "isStacked": false,
       "opacity": "1",
       "nullZeroValues": "zero",
       "timePreferance": "GLOBAL_TIME",
-      "yAxisUnit": "usd/min",
+      "yAxisUnit": "σ",
       "softMax": null,
       "softMin": null,
       "fillSpans": false,
@@ -178,7 +178,7 @@
               "disabled": false,
               "aggregateOperator": "avg",
               "aggregateAttribute": {
-                "key": "vitals.cost.velocity",
+                "key": "vitals.verdict.cost_sigma",
                 "dataType": "float64",
                 "type": "Gauge",
                 "isColumn": true
@@ -211,14 +211,14 @@
     },
     {
       "id": "4",
-      "title": "Drift onset by version",
-      "description": "1 when CUSUM flags a sustained regression for a version.",
+      "title": "Velocity ratio by version",
+      "description": "Current burn rate multiple relative to baseline rate.",
       "panelTypes": "graph",
       "isStacked": false,
       "opacity": "1",
       "nullZeroValues": "zero",
       "timePreferance": "GLOBAL_TIME",
-      "yAxisUnit": "",
+      "yAxisUnit": "×",
       "softMax": null,
       "softMin": null,
       "fillSpans": false,
@@ -233,14 +233,14 @@
               "queryName": "A",
               "expression": "A",
               "disabled": false,
-              "aggregateOperator": "max",
+              "aggregateOperator": "avg",
               "aggregateAttribute": {
-                "key": "gen_ai.evaluation.drift_onset",
+                "key": "vitals.verdict.velocity_ratio",
                 "dataType": "float64",
                 "type": "Gauge",
                 "isColumn": true
               },
-              "timeAggregation": "max",
+              "timeAggregation": "avg",
               "spaceAggregation": "avg",
               "filters": {
                 "op": "AND",
