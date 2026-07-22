@@ -11,6 +11,8 @@ class Health:
         self.spans_scored = 0
         self.emit_errors = 0
         self.baseline_ready = 0  # 0 = warming, 1 = at least one baseline ready
+        self.scopes = 0
+        self.verdicts_emitted = 0
         # receiver-owned counters are read via the injected stats object
         self._recv_stats = None
 
@@ -24,6 +26,14 @@ class Health:
     def inc_emit_error(self) -> None:
         with self._lock:
             self.emit_errors += 1
+
+    def inc_verdicts_emitted(self) -> None:
+        with self._lock:
+            self.verdicts_emitted += 1
+
+    def set_scopes(self, count: int) -> None:
+        with self._lock:
+            self.scopes = count
 
     def set_baseline_ready(self, ready: bool) -> None:
         with self._lock:
@@ -39,4 +49,6 @@ class Health:
                 "spans_skipped": float(skipped),
                 "emit_errors": float(self.emit_errors),
                 "baseline_state": float(self.baseline_ready),
+                "scopes": float(self.scopes),
+                "verdicts_emitted": float(self.verdicts_emitted),
             }
