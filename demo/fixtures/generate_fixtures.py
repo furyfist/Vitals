@@ -38,7 +38,7 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
     path_dir = Path(out_dir)
     path_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Steady Baseline (01_steady_baseline.jsonl)
+    # 1. Steady Baseline (01_steady_baseline.jsonl): 30 warming + 15 healthy scored spans
     spans_01 = []
     ts = 0.0
     for i in range(45):
@@ -51,14 +51,13 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
                 rel_ts=ts,
             )
         )
-        ts += 2.0
+        ts += 12.0
     write_fixture(path_dir / "01_steady_baseline.jsonl", spans_01)
 
-    # 2. Release Regression (02_release_regression.jsonl)
+    # 2. Release Regression (02_release_regression.jsonl): 30 warming + 10 healthy v1 + 15 degraded v2 spans
     spans_02 = []
     ts = 0.0
-    # 30 reference v1 spans
-    for i in range(30):
+    for i in range(40):
         spans_02.append(
             make_span(
                 i,
@@ -68,9 +67,8 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
                 rel_ts=ts,
             )
         )
-        ts += 2.0
-    # 15 degraded v2 spans (poisoned prompt / hallucinated output)
-    for i in range(30, 45):
+        ts += 12.0
+    for i in range(40, 55):
         spans_02.append(
             make_span(
                 i,
@@ -80,33 +78,31 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
                 rel_ts=ts,
             )
         )
-        ts += 2.0
+        ts += 12.0
     write_fixture(path_dir / "02_release_regression.jsonl", spans_02)
 
-    # 3. Runaway Loop (03_runaway_loop.jsonl)
+    # 3. Runaway Loop (03_runaway_loop.jsonl): 30 warming + 10 healthy + 15 rapid runaway loop spans
     spans_03 = []
     ts = 0.0
-    # 30 reference v1 spans
-    for i in range(30):
+    for i in range(40):
         spans_03.append(
             make_span(
                 i,
                 version="v1",
-                input_text=f"query {i % 5}",
-                output_text=f"standard response {i % 5}",
+                input_text=f"what is opentelemetry topic query {i % 5}?",
+                output_text=f"OpenTelemetry is an open source observability framework variant {i % 5}.",
                 input_tokens=20,
                 output_tokens=30,
                 rel_ts=ts,
             )
         )
-        ts += 2.0
-    # 15 runaway loop spans (high token burn & high rate)
-    for i in range(30, 45):
+        ts += 12.0
+    for i in range(40, 55):
         spans_03.append(
             make_span(
                 i,
                 version="v1",
-                input_text=f"runaway agent loop iteration {i}",
+                input_text=f"what is opentelemetry topic query {i % 5}?",
                 output_text="A" * 5000,
                 input_tokens=15000,
                 output_tokens=25000,
@@ -116,11 +112,10 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
         ts += 0.2
     write_fixture(path_dir / "03_runaway_loop.jsonl", spans_03)
 
-    # 4. Input Shift (04_input_shift.jsonl)
+    # 4. Input Shift (04_input_shift.jsonl): 30 warming + 10 healthy Topic A + 15 shifted Topic B spans
     spans_04 = []
     ts = 0.0
-    # 30 reference spans on Topic A
-    for i in range(30):
+    for i in range(40):
         spans_04.append(
             make_span(
                 i,
@@ -130,9 +125,8 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
                 rel_ts=ts,
             )
         )
-        ts += 2.0
-    # 15 shifted Topic B database queries + modified outputs (causes input drift + behavior drift)
-    for i in range(30, 45):
+        ts += 12.0
+    for i in range(40, 55):
         spans_04.append(
             make_span(
                 i,
@@ -142,7 +136,7 @@ def generate_all_fixtures(out_dir: str = "demo/fixtures") -> None:
                 rel_ts=ts,
             )
         )
-        ts += 2.0
+        ts += 12.0
     write_fixture(path_dir / "04_input_shift.jsonl", spans_04)
 
     print(f"Successfully generated 4 golden replay fixtures in {out_dir}")
