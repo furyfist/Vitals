@@ -1,5 +1,6 @@
 """Verdict package — evaluation models, signals, scope state, attribution, and evaluator."""
 
+from vitals.verdict.signal import CalibratedSignal
 from vitals.verdict.types import (
     Cause,
     Exemplar,
@@ -16,4 +17,5 @@ __all__ = [
     "InconclusiveReason",
     "Exemplar",
     "Verdict",
+    "CalibratedSignal",
 ]
