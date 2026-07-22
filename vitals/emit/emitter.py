@@ -9,6 +9,7 @@ response and correlate to the original trace via trace_id/span_id.
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -238,6 +239,87 @@ class Emitter:
             severity_number=SeverityNumber.INFO,
             severity_text="INFO",
             body=f"vitals eval {rec.state}: {rec.reason}",
+            attributes=attrs,
+        )
+        self._logger.emit(record)
+
+    def emit_verdict_log(self, verdict: Verdict) -> None:
+        """Emit a trace-linked verdict log record (spec §8.2)."""
+        attrs: dict[str, object] = {
+            contract.SERVICE_NAME: verdict.service_name,
+            contract.SERVICE_VERSION: verdict.version,
+            contract.GEN_AI_SYSTEM: verdict.gen_ai_system,
+            contract.GEN_AI_MODEL: verdict.model,
+            "vitals.verdict_id": verdict.verdict_id,
+            "vitals.ts_unix": verdict.ts_unix,
+            "vitals.state": verdict.state.value,
+            "vitals.subject": verdict.subject.value,
+            "vitals.cause": verdict.cause.value,
+            "vitals.flag_cost": verdict.flag_cost,
+            "vitals.flag_behavior": verdict.flag_behavior,
+            "vitals.runaway": verdict.runaway,
+            "vitals.samples": verdict.samples,
+            "vitals.baseline_samples": verdict.baseline_samples,
+            contract.ATTR_FALSIFIER: verdict.falsifier,
+            contract.ATTR_CAVEATS: ",".join(verdict.caveats) if verdict.caveats else "",
+        }
+
+        for k, v in (
+            ("vitals.baseline_version", verdict.baseline_version),
+            ("vitals.behavior_sigma", verdict.behavior_sigma),
+            ("vitals.cost_sigma", verdict.cost_sigma),
+            ("vitals.cost_usd_per_req", verdict.cost_usd_per_req),
+            ("vitals.baseline_cost_usd_per_req", verdict.baseline_cost_usd_per_req),
+            ("vitals.velocity_ratio", verdict.velocity_ratio),
+            ("vitals.onset_ts_unix", verdict.onset_ts_unix),
+            ("vitals.seconds_after_deploy", verdict.seconds_after_deploy),
+            (
+                "vitals.inconclusive_reason",
+                verdict.inconclusive_reason.value if verdict.inconclusive_reason else None,
+            ),
+        ):
+            if v is not None:
+                attrs[k] = v
+
+        if verdict.exemplars:
+            ex_dicts = [
+                {
+                    "kind": ex.kind,
+                    "trace_id": ex.trace_id,
+                    "span_id": ex.span_id,
+                    "excerpt": ex.output_excerpt,
+                    "sigma": ex.behavior_sigma,
+                }
+                for ex in verdict.exemplars
+            ]
+            ex_json = json.dumps(ex_dicts)
+            attrs[contract.ATTR_EXEMPLARS] = ex_json[:2048]
+
+        # Trace link to the worst exemplar
+        worst_ex = next((ex for ex in verdict.exemplars if ex.kind == "worst"), None)
+        if worst_ex is None and verdict.exemplars:
+            worst_ex = verdict.exemplars[0]
+
+        trace_id_str = worst_ex.trace_id if worst_ex else ""
+        span_id_str = worst_ex.span_id if worst_ex else ""
+
+        try:
+            trace_id_int = int(trace_id_str, 16) if trace_id_str else 0
+            span_id_int = int(span_id_str, 16) if span_id_str else 0
+        except ValueError:
+            trace_id_int = span_id_int = 0
+
+        is_changed = verdict.state.value == "changed"
+        sev_num = SeverityNumber.WARN if is_changed else SeverityNumber.INFO
+        sev_text = "WARN" if is_changed else "INFO"
+
+        record = LogRecord(
+            timestamp=int(verdict.ts_unix * 1e9),
+            trace_id=trace_id_int,
+            span_id=span_id_int,
+            severity_number=sev_num,
+            severity_text=sev_text,
+            body=verdict.sentence,
             attributes=attrs,
         )
         self._logger.emit(record)
