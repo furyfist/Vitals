@@ -62,8 +62,11 @@ class EvaluatorThread(threading.Thread):
 
     def run(self) -> None:
         while not self._stop_event.is_set():
-            now = time.time()
-            self._tick(now)
+            try:
+                now = time.time()
+                self._tick(now)
+            except Exception:  # noqa: BLE001
+                log.exception("evaluator: unhandled error during tick")
             self._stop_event.wait(float(self._cfg.evaluate_interval_s))
 
     def _tick(self, now: float) -> None:
