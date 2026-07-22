@@ -27,12 +27,14 @@ from opentelemetry.sdk.resources import Resource
 from vitals import contract
 from vitals.cost.engine import CostSample
 from vitals.quality.types import EvalLogRecord, QualityMetricSample
+from vitals.verdict.types import Verdict
 
 log = logging.getLogger(__name__)
 
 CostProvider = Callable[[], list[CostSample]]
 QualityProvider = Callable[[], list[QualityMetricSample]]
 HealthProvider = Callable[[], dict[str, float]]
+VerdictProvider = Callable[[], list[Verdict]]
 
 
 def _obs(value: float | None, dims: dict[str, str]) -> Observation | None:
@@ -49,12 +51,14 @@ class Emitter:
         cost_provider: CostProvider,
         quality_provider: QualityProvider,
         health_provider: HealthProvider,
+        verdict_provider: VerdictProvider | None = None,
         insecure: bool = True,
     ):
         self._resource = Resource.create({"service.name": contract.SCOPE_NAME})
         self._cost_provider = cost_provider
         self._quality_provider = quality_provider
         self._health_provider = health_provider
+        self._verdict_provider = verdict_provider
 
         # --- metrics: direct OTLP gRPC to SigNoz ingest ---
         metric_exporter = OTLPMetricExporter(endpoint=endpoint, insecure=insecure)
@@ -146,6 +150,58 @@ class Emitter:
 
         meter.create_observable_gauge(
             "vitals.health", callbacks=[health], unit="1"
+        )
+
+        # --- verdict metric gauges (V2 additive) ---
+        def v_field(getter):
+            def cb(_: CallbackOptions):
+                if not self._verdict_provider:
+                    return []
+                obs_list = []
+                for v in self._verdict_provider():
+                    val = getter(v)
+                    if val is None:
+                        continue
+                    dims = {
+                        contract.SERVICE_NAME: v.service_name,
+                        contract.SERVICE_VERSION: v.version,
+                        contract.GEN_AI_SYSTEM: v.gen_ai_system,
+                        contract.GEN_AI_MODEL: v.model,
+                        contract.ATTR_SUBJECT: v.subject.value,
+                        contract.ATTR_CAUSE: v.cause.value,
+                        contract.ATTR_FLAG_COST: v.flag_cost,
+                        contract.ATTR_FLAG_BEHAVIOR: v.flag_behavior,
+                        contract.ATTR_RUNAWAY: v.runaway,
+                    }
+                    obs_list.append(Observation(float(val), attributes=dims))
+                return obs_list
+
+            return cb
+
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_STATE,
+            callbacks=[v_field(lambda v: contract.VERDICT_STATE_NUM.get(v.state.value, 0))],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_BEHAVIOR_SIGMA,
+            callbacks=[v_field(lambda v: v.behavior_sigma)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_COST_SIGMA,
+            callbacks=[v_field(lambda v: v.cost_sigma)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_VELOCITY_RATIO,
+            callbacks=[v_field(lambda v: v.velocity_ratio)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_SAMPLES,
+            callbacks=[v_field(lambda v: v.samples)],
+            unit="1",
         )
 
     # -------------------------------------------------------------------- logs
