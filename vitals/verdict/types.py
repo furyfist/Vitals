@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+from typing import Any
 
 
 class VerdictState(str, Enum):
@@ -168,3 +169,115 @@ class Verdict:
             return " · ".join(parts)
 
         return f"{self.state.value.upper()} · {self.service_name} {self.version} · n={self.samples}"
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize Verdict to a JSON-compatible dictionary."""
+        return {
+            "verdict_id": self.verdict_id,
+            "ts_unix": self.ts_unix,
+            "service_name": self.service_name,
+            "gen_ai_system": self.gen_ai_system,
+            "model": self.model,
+            "version": self.version,
+            "baseline_version": self.baseline_version,
+            "state": self.state.value,
+            "subject": self.subject.value,
+            "cause": self.cause.value,
+            "flag_cost": self.flag_cost,
+            "flag_behavior": self.flag_behavior,
+            "runaway": self.runaway,
+            "behavior_sigma": self.behavior_sigma,
+            "cost_sigma": self.cost_sigma,
+            "cost_usd_per_req": self.cost_usd_per_req,
+            "baseline_cost_usd_per_req": self.baseline_cost_usd_per_req,
+            "velocity_ratio": self.velocity_ratio,
+            "samples": self.samples,
+            "baseline_samples": self.baseline_samples,
+            "onset_ts_unix": self.onset_ts_unix,
+            "seconds_after_deploy": self.seconds_after_deploy,
+            "inconclusive_reason": (
+                self.inconclusive_reason.value if self.inconclusive_reason else None
+            ),
+            "caveats": list(self.caveats),
+            "falsifier": self.falsifier,
+            "warming_progress": list(self.warming_progress) if self.warming_progress else None,
+            "exemplars": [
+                {
+                    "kind": ex.kind,
+                    "trace_id": ex.trace_id,
+                    "span_id": ex.span_id,
+                    "output_excerpt": ex.output_excerpt,
+                    "behavior_sigma": ex.behavior_sigma,
+                }
+                for ex in self.exemplars
+            ],
+            "input_sigma": self.input_sigma,
+            "sentence": self.sentence,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> Verdict:
+        """Deserialize Verdict from a dictionary."""
+        exemplars = tuple(
+            Exemplar(
+                kind=ex["kind"],
+                trace_id=ex["trace_id"],
+                span_id=ex["span_id"],
+                output_excerpt=ex["output_excerpt"],
+                behavior_sigma=float(ex["behavior_sigma"]),
+            )
+            for ex in d.get("exemplars", [])
+        )
+        inc_reason = (
+            InconclusiveReason(d["inconclusive_reason"])
+            if d.get("inconclusive_reason")
+            else None
+        )
+        wp = tuple(d["warming_progress"]) if d.get("warming_progress") is not None else None
+        return cls(
+            verdict_id=d["verdict_id"],
+            ts_unix=float(d["ts_unix"]),
+            service_name=d["service_name"],
+            gen_ai_system=d["gen_ai_system"],
+            model=d["model"],
+            version=d["version"],
+            baseline_version=d.get("baseline_version"),
+            state=VerdictState(d["state"]),
+            subject=Subject(d["subject"]),
+            cause=Cause(d["cause"]),
+            flag_cost=bool(d["flag_cost"]),
+            flag_behavior=bool(d["flag_behavior"]),
+            runaway=bool(d["runaway"]),
+            behavior_sigma=(
+                float(d["behavior_sigma"]) if d.get("behavior_sigma") is not None else None
+            ),
+            cost_sigma=float(d["cost_sigma"]) if d.get("cost_sigma") is not None else None,
+            cost_usd_per_req=(
+                float(d["cost_usd_per_req"]) if d.get("cost_usd_per_req") is not None else None
+            ),
+            baseline_cost_usd_per_req=(
+                float(d["baseline_cost_usd_per_req"])
+                if d.get("baseline_cost_usd_per_req") is not None
+                else None
+            ),
+            velocity_ratio=(
+                float(d["velocity_ratio"]) if d.get("velocity_ratio") is not None else None
+            ),
+            samples=int(d["samples"]),
+            baseline_samples=int(d["baseline_samples"]),
+            onset_ts_unix=(
+                float(d["onset_ts_unix"]) if d.get("onset_ts_unix") is not None else None
+            ),
+            seconds_after_deploy=(
+                float(d["seconds_after_deploy"])
+                if d.get("seconds_after_deploy") is not None
+                else None
+            ),
+            inconclusive_reason=inc_reason,
+            caveats=tuple(d.get("caveats", ())),
+            falsifier=d.get("falsifier", ""),
+            warming_progress=wp,
+            exemplars=exemplars,
+            input_sigma=float(d["input_sigma"]) if d.get("input_sigma") is not None else None,
+        )
+
