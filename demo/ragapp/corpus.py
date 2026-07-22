@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-DOCS = [
+DOCS_TOPIC_A = [
     "OpenTelemetry is an open source observability framework for traces, metrics, and logs.",
     "SigNoz is an open source APM built on OpenTelemetry and ClickHouse.",
     "The OTLP protocol exports telemetry over gRPC on port 4317 and HTTP on port 4318.",
@@ -13,12 +13,31 @@ DOCS = [
     "CUSUM detects the onset of a sustained shift in a monitored metric series.",
 ]
 
+DOCS_TOPIC_B = [
+    "Write-Ahead Logging (WAL) ensures durability and atomic index updates in relational engines.",
+    "B-Tree indices optimize range queries, whereas Hash indices target exact equality lookups.",
+    "Multiversion Concurrency Control (MVCC) allows concurrent readers and writers without global locks.",
+    "Query planners use cost estimates to choose between nested loop joins and hash joins.",
+    "Database checkpoints flush dirty buffer pool pages to disk for recovery speed.",
+    "Foreign keys enforce referential integrity across relational schema tables.",
+    "Deadlock detection algorithms build wait-for graphs to break cyclic transaction dependencies.",
+    "Read committed isolation prevents dirty reads by acquiring short-term shared locks.",
+]
 
-def retrieve(query: str, k: int = 3) -> list[str]:
+DOCS = DOCS_TOPIC_A + DOCS_TOPIC_B
+
+
+def retrieve(query: str, k: int = 3, topic: str | None = None) -> list[str]:
     """Return the k docs sharing the most words with the query (deterministic)."""
+    docs_to_search = DOCS
+    if topic == "A":
+        docs_to_search = DOCS_TOPIC_A
+    elif topic == "B":
+        docs_to_search = DOCS_TOPIC_B
+
     q_words = {w.lower().strip("?.,") for w in query.split()}
     scored = sorted(
-        DOCS,
+        docs_to_search,
         key=lambda d: len(q_words & {w.lower().strip("?.,") for w in d.split()}),
         reverse=True,
     )
