@@ -2,7 +2,7 @@
 
     collector fan-out ─▶ OTLPReceiver ─▶ on_span ─┬─▶ CostEngine
                                                    ├─▶ QualityEngine ─▶ eval log
-                                                   └─▶ ScopeState ──▶ EvaluatorThread ─▶ VerdictStore
+                                                   └─▶ ScopeState ──▶ EvaluatorThread ─▶ VerdictStore ──▶ ConsoleServer (:8787)
                           Emitter (out-of-band) ◀── cost/quality/health providers ─────────────▶ SigNoz
 """
 
@@ -17,12 +17,14 @@ import time
 
 from vitals import __version__
 from vitals.config import load_config
+from vitals.console import create_console_server
 from vitals.cost.engine import CostEngine
 from vitals.cost.prices import PriceTable
 from vitals.emit.emitter import Emitter
 from vitals.health import Health
 from vitals.ingest.receiver import OTLPReceiver
 from vitals.model import GenAISpan
+from vitals.replay import read_fixture, run_replay, write_fixture
 from vitals.store import VerdictStore
 from vitals.verdict.evaluator import evaluate_scope_version
 from vitals.verdict.scope import ScopeState
@@ -185,16 +187,26 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
             scopes, store, cfg.verdict, cost_engine, health, emitter, verdict_snapshot
         )
 
+    console_server = None
+    if cfg.console.enabled:
+        console_server = create_console_server(
+            cfg.console.host, cfg.console.port, store, scopes, health
+        )
+
     receiver = OTLPReceiver(cfg.receiver.host, cfg.receiver.grpc_port, on_span)
     health.bind_receiver_stats(receiver.stats)
-    return cfg, receiver, emitter, health, store, evaluator
+    return cfg, receiver, emitter, health, store, evaluator, console_server, on_span
 
 
 def run(config_path: str | None = "vitals.yaml") -> None:
-    cfg, receiver, emitter, _, store, evaluator = build_pipeline(config_path)
+    cfg, receiver, emitter, _, store, evaluator, console_server, _ = build_pipeline(config_path)
     receiver.start()
     if evaluator is not None:
         evaluator.start()
+
+    if console_server is not None:
+        console_thread = threading.Thread(target=console_server.serve_forever, daemon=True)
+        console_thread.start()
 
     log.info(
         "vitals %s running — receiver :%d -> emitting to %s",
@@ -218,6 +230,70 @@ def run(config_path: str | None = "vitals.yaml") -> None:
         if evaluator is not None:
             evaluator.stop()
             evaluator.join(timeout=2.0)
+        if console_server is not None:
+            console_server.shutdown()
+            console_server.server_close()
+        emitter.shutdown()
+        store.close()
+
+
+def record_cmd(out_path: str, config_path: str | None = "vitals.yaml") -> None:
+    """Record mapped GenAISpans to JSONL fixture file (spec §D6, §18)."""
+    cfg = load_config(config_path)
+    spans_recorded: list[tuple[GenAISpan, float]] = []
+    start_ts = time.time()
+    lock = threading.Lock()
+
+    def on_span(span: GenAISpan) -> None:
+        with lock:
+            rel_ts = time.time() - start_ts
+            spans_recorded.append((span, rel_ts))
+            log.info("recorded span #%d from %s", len(spans_recorded), span.service_name)
+
+    receiver = OTLPReceiver(cfg.receiver.host, cfg.receiver.grpc_port, on_span)
+    receiver.start()
+    log.info("vitals record running on :%d — recording to %s", cfg.receiver.grpc_port, out_path)
+
+    stop = threading.Event()
+
+    def _shutdown(*_):
+        stop.set()
+
+    signal.signal(signal.SIGINT, _shutdown)
+    signal.signal(signal.SIGTERM, _shutdown)
+    try:
+        stop.wait()
+    finally:
+        receiver.stop()
+        with lock:
+            write_fixture(out_path, spans_recorded)
+            log.info("Saved %d spans to %s", len(spans_recorded), out_path)
+
+
+def replay_cmd(
+    fixture_path: str, speed: float = 1.0, config_path: str | None = "vitals.yaml"
+) -> None:
+    """Replay mapped GenAISpans from JSONL fixture file (spec §D6, §18)."""
+    cfg, _, emitter, _, store, evaluator, console_server, on_span_cb = build_pipeline(config_path)
+    if evaluator is not None:
+        evaluator.start()
+
+    if console_server is not None:
+        console_thread = threading.Thread(target=console_server.serve_forever, daemon=True)
+        console_thread.start()
+
+    try:
+        n = run_replay(fixture_path, speed=speed, on_span_cb=lambda span, _: on_span_cb(span))
+        log.info("Replay completed: %d spans processed", n)
+        # Give evaluator time for final tick if needed
+        time.sleep(1.0)
+    finally:
+        if evaluator is not None:
+            evaluator.stop()
+            evaluator.join(timeout=2.0)
+        if console_server is not None:
+            console_server.shutdown()
+            console_server.server_close()
         emitter.shutdown()
         store.close()
 
@@ -225,8 +301,19 @@ def run(config_path: str | None = "vitals.yaml") -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="vitals", description="Vitals AI signal sidecar")
     sub = parser.add_subparsers(dest="command")
+
     run_p = sub.add_parser("run", help="start the sidecar")
     run_p.add_argument("--config", default="vitals.yaml", help="path to vitals.yaml")
+
+    rec_p = sub.add_parser("record", help="record spans to JSONL fixture")
+    rec_p.add_argument("--out", required=True, help="output JSONL path")
+    rec_p.add_argument("--config", default="vitals.yaml", help="path to vitals.yaml")
+
+    rep_p = sub.add_parser("replay", help="replay spans from JSONL fixture")
+    rep_p.add_argument("fixture", help="path to JSONL fixture file")
+    rep_p.add_argument("--speed", type=float, default=1.0, help="replay speed factor")
+    rep_p.add_argument("--config", default="vitals.yaml", help="path to vitals.yaml")
+
     parser.add_argument("--version", action="version", version=f"vitals {__version__}")
     parser.add_argument("--log-level", default="INFO")
 
@@ -238,6 +325,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "run":
         run(args.config)
+        return 0
+
+    if args.command == "record":
+        record_cmd(args.out, args.config)
+        return 0
+
+    if args.command == "replay":
+        replay_cmd(args.fixture, args.speed, args.config)
         return 0
 
     parser.print_help()
