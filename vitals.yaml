@@ -1,0 +1,28 @@
+# Vitals tuning config. Endpoints and API keys live in .env, not here.
+# Every value is optional — omit to use the built-in default.
+
+receiver:
+  grpc_port: 4327
+  http_port: 4328
+  host: "0.0.0.0"
+
+emit:
+  # Out-of-band: direct to SigNoz ingest (D4). Overridden by SIGNOZ_OTLP_ENDPOINT.
+  endpoint: "http://localhost:4317"
+  export_interval_ms: 5000
+  queue_max: 10000
+
+cost:
+  price_table: "vitals/cost/prices.yaml"
+  velocity_window_s: 60
+
+quality:
+  enabled: true
+  baseline_window: 30       # spike S4: outputs before scoring (warming state)
+  drift_threshold: 0.10     # PSI pass/fail
+  cusum_k: 0.5              # slack (~0.5 * baseline sigma)
+  cusum_h: 5.0              # decision threshold — onset when crossed
+  db_path: "vitals.db"
+  weight_drift: 0.6
+  weight_consistency: 0.2
+  weight_stability: 0.2

@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vitals"
+version = "0.1.0"
+description = "The missing vital signs for AI systems: cost and quality as first-class SigNoz signals"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "Himanshu", email = "im.furyfist@gmail.com" }]
+keywords = ["llm", "observability", "otel", "signoz", "cost", "quality", "drift"]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+    "ruptures>=1.1.9",
+    "pyyaml>=6.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.20.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.20.0",
+    "opentelemetry-semantic-conventions>=0.48b0",
+    "grpcio>=1.60.0",
+    "protobuf>=4.0.0",
+]
+
+[project.optional-dependencies]
+# Full spanIQ quality path (embedding-based metrics). ResponseDrift + CUSUM,
+# the never-cut core, run without this.
+quality-full = ["sentence-transformers>=3.0.0"]
+dev = ["pytest>=8.0", "ruff==0.15.16"]
+
+[project.scripts]
+vitals = "vitals.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vitals", "spaniq"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [".venv", "venv", "build", "dist", "spaniq"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "-ra --strict-markers"

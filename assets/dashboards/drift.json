@@ -1,0 +1,277 @@
+{
+  "title": "Vitals \u2014 Drift",
+  "description": "Quality-drift timelines with CUSUM onset markers. When did quality change, and which release.",
+  "tags": [
+    "vitals",
+    "drift",
+    "genai"
+  ],
+  "version": "v4",
+  "layout": [
+    {
+      "i": "1",
+      "x": 0,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "2",
+      "x": 6,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "3",
+      "x": 0,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "4",
+      "x": 6,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    }
+  ],
+  "widgets": [
+    {
+      "id": "1",
+      "title": "Drift (PSI) timeline",
+      "description": "Rolling drift vs healthy baseline.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.drift",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "2",
+      "title": "CUSUM drift onset",
+      "description": "Marker flips to 1 at the detected onset of sustained drift.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "max",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.drift_onset",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "max",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "3",
+      "title": "Consistency",
+      "description": "Self-consistency (embedding path; may be empty in drift-only mode).",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.consistency",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "4",
+      "title": "Stability",
+      "description": "Output stability (embedding path).",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.stability",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    }
+  ],
+  "variables": {}
+}

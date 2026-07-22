@@ -1,0 +1,49 @@
+# Demo stack: RAG app -> collector (fan-out) -> {SigNoz, vitals}.
+# SigNoz itself is assumed already running on the host (self-hosted compose or Cloud),
+# reachable at host.docker.internal:4317. Only the app + collector + vitals live here.
+#
+#   docker compose -f demo/compose.yaml up --build
+#
+# Set GROQ_API_KEY in demo/.env (copy from .env.example) before starting the app.
+
+services:
+  vitals:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      # vitals emits OUT-OF-BAND directly to SigNoz ingest (D4), not via the collector.
+      SIGNOZ_OTLP_ENDPOINT: "http://host.docker.internal:4317"
+      VITALS_OTLP_GRPC_PORT: "4327"
+    ports:
+      - "4327:4327"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.109.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./collector/config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4319:4317"   # app -> collector (host 4319 to avoid clashing with SigNoz 4317)
+    depends_on:
+      - vitals
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ragapp:
+    build:
+      context: ./ragapp
+    environment:
+      GROQ_API_KEY: "${GROQ_API_KEY}"
+      # App exports OTLP to the collector (the fan-out point), not to SigNoz directly.
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "ragapp"
+      # Prompt version toggled by scenarios (v1 good / v2 poisoned).
+      PROMPT_VERSION: "${PROMPT_VERSION:-v1}"
+      SERVICE_VERSION: "${PROMPT_VERSION:-v1}"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - collector

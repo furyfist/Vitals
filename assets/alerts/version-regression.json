@@ -1,0 +1,66 @@
+{
+  "alert": "Vitals: per-version quality regression",
+  "alertType": "METRIC_BASED_ALERT",
+  "description": "Composite quality score fell below 0.6 for a service.version. Compare v1/v2 on the Release Compare dashboard.",
+  "ruleType": "threshold_rule",
+  "evalWindow": "10m0s",
+  "frequency": "1m0s",
+  "condition": {
+    "compositeQuery": {
+      "queryType": "builder",
+      "panelType": "graph",
+      "builder": {
+        "queryData": [
+          {
+            "dataSource": "metrics",
+            "queryName": "A",
+            "expression": "A",
+            "disabled": false,
+            "aggregateOperator": "avg",
+            "aggregateAttribute": {
+              "key": "gen_ai.evaluation.score",
+              "dataType": "float64",
+              "type": "Gauge",
+              "isColumn": true
+            },
+            "timeAggregation": "avg",
+            "spaceAggregation": "avg",
+            "filters": {
+              "op": "AND",
+              "items": []
+            },
+            "groupBy": [
+              {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "tag"
+              },
+              {
+                "key": "service.version",
+                "dataType": "string",
+                "type": "tag"
+              }
+            ],
+            "legend": "",
+            "reduceTo": "last",
+            "having": [],
+            "stepInterval": 60
+          }
+        ],
+        "queryFormulas": []
+      }
+    },
+    "op": "<",
+    "target": 0.6,
+    "matchType": "1",
+    "targetUnit": ""
+  },
+  "labels": {
+    "severity": "warning",
+    "source": "vitals"
+  },
+  "annotations": {
+    "description": "Composite quality score fell below 0.6 for a service.version. Compare v1/v2 on the Release Compare dashboard.",
+    "summary": "Vitals: per-version quality regression"
+  }
+}

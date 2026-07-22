@@ -1,0 +1,43 @@
+# Demo OTel Collector — the fan-out point (D1). Receives gen_ai spans from the RAG app
+# and exports the SAME spans to two destinations: SigNoz (the user's real backend) and
+# vitals (the sidecar). This one added exporter is the entire integration ask.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  # Destination 1: SigNoz ingest (already running on the host).
+  otlp/signoz:
+    endpoint: host.docker.internal:4317
+    tls:
+      insecure: true
+  # Destination 2: vitals sidecar. THIS is the fan-out exporter.
+  otlp/vitals:
+    endpoint: vitals:4327
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/signoz, otlp/vitals]
+    # metrics/logs from the app still go straight to SigNoz
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/signoz]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/signoz]

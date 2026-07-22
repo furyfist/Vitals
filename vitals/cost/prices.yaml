@@ -1,0 +1,46 @@
+# Bundled per-model price table. USD per 1,000,000 tokens. User-overridable (D7).
+# Sources: public provider pricing, mid-2026. Keep model keys lowercase; the engine
+# matches case-insensitively and falls back to `default` for unknown models.
+#
+# Format:
+#   <model>: { input: <usd_per_1M_input_tokens>, output: <usd_per_1M_output_tokens> }
+
+default:
+  input: 0.50
+  output: 1.50
+
+# --- Groq (demo app) ---
+llama-3.3-70b-versatile:
+  input: 0.59
+  output: 0.79
+llama-3.1-8b-instant:
+  input: 0.05
+  output: 0.08
+llama3-70b-8192:
+  input: 0.59
+  output: 0.79
+mixtral-8x7b-32768:
+  input: 0.24
+  output: 0.24
+
+# --- OpenAI ---
+gpt-4o:
+  input: 2.50
+  output: 10.00
+gpt-4o-mini:
+  input: 0.15
+  output: 0.60
+gpt-4-turbo:
+  input: 10.00
+  output: 30.00
+
+# --- Anthropic ---
+claude-3-5-sonnet:
+  input: 3.00
+  output: 15.00
+claude-3-5-haiku:
+  input: 0.80
+  output: 4.00
+claude-3-opus:
+  input: 15.00
+  output: 75.00

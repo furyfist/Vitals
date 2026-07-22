@@ -1,0 +1,423 @@
+{
+  "title": "Vitals \u2014 Overview",
+  "description": "The missing AI vital signs: quality beside cost beside latency, one pane.",
+  "tags": [
+    "vitals",
+    "ai",
+    "genai"
+  ],
+  "version": "v4",
+  "layout": [
+    {
+      "i": "1",
+      "x": 0,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "2",
+      "x": 6,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "3",
+      "x": 0,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "4",
+      "x": 6,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "5",
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "6",
+      "x": 6,
+      "y": 12,
+      "w": 6,
+      "h": 6
+    }
+  ],
+  "widgets": [
+    {
+      "id": "1",
+      "title": "Cost velocity (USD/min)",
+      "description": "Runaway-loop early warning. Spikes minutes before the invoice.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "usd/min",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "vitals.cost.velocity",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}} {{gen_ai.request.model}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "2",
+      "title": "Cumulative burn (USD)",
+      "description": "Total spend since start, per service/model.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "sum",
+              "aggregateAttribute": {
+                "key": "vitals.cost.total",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true
+              },
+              "timeAggregation": "sum",
+              "spaceAggregation": "sum",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "3",
+      "title": "Quality score (0..1)",
+      "description": "Composite deterministic quality. Higher is better.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.score",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}} {{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "4",
+      "title": "Quality drift (PSI)",
+      "description": "Deviation from healthy baseline. Lower is better.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.drift",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "5",
+      "title": "Output tokens",
+      "description": "Token throughput \u2014 stays flat during a silent quality regression.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "sum",
+              "aggregateAttribute": {
+                "key": "vitals.tokens.output",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true
+              },
+              "timeAggregation": "sum",
+              "spaceAggregation": "sum",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "6",
+      "title": "Vitals health",
+      "description": "Sidecar self-health: spans received / scored / skipped.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "vitals.health",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "metric",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{metric}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    }
+  ],
+  "variables": {}
+}

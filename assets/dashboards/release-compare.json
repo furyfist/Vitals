@@ -1,0 +1,271 @@
+{
+  "title": "Vitals \u2014 Release Compare",
+  "description": "Quality and cost split by service.version. Catch the release that regressed.",
+  "tags": [
+    "vitals",
+    "release",
+    "genai"
+  ],
+  "version": "v4",
+  "layout": [
+    {
+      "i": "1",
+      "x": 0,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "2",
+      "x": 6,
+      "y": 0,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "3",
+      "x": 0,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "i": "4",
+      "x": 6,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    }
+  ],
+  "widgets": [
+    {
+      "id": "1",
+      "title": "Quality score by version",
+      "description": "Per-release quality. The poisoned v2 line drops here.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.score",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "2",
+      "title": "Drift by version",
+      "description": "Per-release drift from the shared healthy baseline.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.drift",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "3",
+      "title": "Cost velocity by version",
+      "description": "Spend-rate per release.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "usd/min",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "vitals.cost.velocity",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "4",
+      "title": "Drift onset by version",
+      "description": "1 when CUSUM flags a sustained regression for a version.",
+      "panelTypes": "graph",
+      "isStacked": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "",
+      "softMax": null,
+      "softMin": null,
+      "fillSpans": false,
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "expression": "A",
+              "disabled": false,
+              "aggregateOperator": "max",
+              "aggregateAttribute": {
+                "key": "gen_ai.evaluation.drift_onset",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true
+              },
+              "timeAggregation": "max",
+              "spaceAggregation": "avg",
+              "filters": {
+                "op": "AND",
+                "items": []
+              },
+              "groupBy": [
+                {
+                  "key": "service.version",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.version}}",
+              "reduceTo": "last",
+              "having": [],
+              "orderBy": [],
+              "limit": null,
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    }
+  ],
+  "variables": {}
+}

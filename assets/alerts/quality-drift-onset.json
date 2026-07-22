@@ -1,0 +1,66 @@
+{
+  "alert": "Vitals: quality drift onset",
+  "alertType": "METRIC_BASED_ALERT",
+  "description": "CUSUM flagged the onset of sustained quality drift from the healthy baseline. Deviation-from-good, not absolute correctness (see docs/honesty.md).",
+  "ruleType": "threshold_rule",
+  "evalWindow": "5m0s",
+  "frequency": "1m0s",
+  "condition": {
+    "compositeQuery": {
+      "queryType": "builder",
+      "panelType": "graph",
+      "builder": {
+        "queryData": [
+          {
+            "dataSource": "metrics",
+            "queryName": "A",
+            "expression": "A",
+            "disabled": false,
+            "aggregateOperator": "max",
+            "aggregateAttribute": {
+              "key": "gen_ai.evaluation.drift_onset",
+              "dataType": "float64",
+              "type": "Gauge",
+              "isColumn": true
+            },
+            "timeAggregation": "max",
+            "spaceAggregation": "avg",
+            "filters": {
+              "op": "AND",
+              "items": []
+            },
+            "groupBy": [
+              {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "tag"
+              },
+              {
+                "key": "service.version",
+                "dataType": "string",
+                "type": "tag"
+              }
+            ],
+            "legend": "",
+            "reduceTo": "last",
+            "having": [],
+            "stepInterval": 60
+          }
+        ],
+        "queryFormulas": []
+      }
+    },
+    "op": ">=",
+    "target": 1,
+    "matchType": "1",
+    "targetUnit": ""
+  },
+  "labels": {
+    "severity": "critical",
+    "source": "vitals"
+  },
+  "annotations": {
+    "description": "CUSUM flagged the onset of sustained quality drift from the healthy baseline. Deviation-from-good, not absolute correctness (see docs/honesty.md).",
+    "summary": "Vitals: quality drift onset"
+  }
+}

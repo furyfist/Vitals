@@ -1,0 +1,66 @@
+{
+  "alert": "Vitals: cost velocity breach",
+  "alertType": "METRIC_BASED_ALERT",
+  "description": "Cost spend-rate exceeded $5/min for a service/model. Likely a runaway agent loop. Alerts are not enforcement \u2014 investigate the loop.",
+  "ruleType": "threshold_rule",
+  "evalWindow": "5m0s",
+  "frequency": "1m0s",
+  "condition": {
+    "compositeQuery": {
+      "queryType": "builder",
+      "panelType": "graph",
+      "builder": {
+        "queryData": [
+          {
+            "dataSource": "metrics",
+            "queryName": "A",
+            "expression": "A",
+            "disabled": false,
+            "aggregateOperator": "avg",
+            "aggregateAttribute": {
+              "key": "vitals.cost.velocity",
+              "dataType": "float64",
+              "type": "Gauge",
+              "isColumn": true
+            },
+            "timeAggregation": "avg",
+            "spaceAggregation": "avg",
+            "filters": {
+              "op": "AND",
+              "items": []
+            },
+            "groupBy": [
+              {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "tag"
+              },
+              {
+                "key": "gen_ai.request.model",
+                "dataType": "string",
+                "type": "tag"
+              }
+            ],
+            "legend": "",
+            "reduceTo": "last",
+            "having": [],
+            "stepInterval": 60
+          }
+        ],
+        "queryFormulas": []
+      }
+    },
+    "op": ">",
+    "target": 5,
+    "matchType": "1",
+    "targetUnit": ""
+  },
+  "labels": {
+    "severity": "critical",
+    "source": "vitals"
+  },
+  "annotations": {
+    "description": "Cost spend-rate exceeded $5/min for a service/model. Likely a runaway agent loop. Alerts are not enforcement \u2014 investigate the loop.",
+    "summary": "Vitals: cost velocity breach"
+  }
+}

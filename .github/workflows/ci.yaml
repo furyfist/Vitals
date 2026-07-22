@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  vitals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install vitals (+ full quality path for the test suite)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install rich sentence-transformers pytest "ruff==0.15.16"
+      - name: Lint (ruff)
+        run: ruff check vitals test
+      - name: Test (pytest)
+        run: pytest -q
+
+  # The vendored spanIQ core is imported unmodified — smoke-check it loads. Its full
+  # 244-test suite lives upstream (github.com/furyfist/spanIQ) and stays green there.
+  spaniq-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install vendored spanIQ deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy ruptures rich sentence-transformers
+      - name: Import-check vendored spanIQ
+        run: python -c "import spaniq; from spaniq.metrics.response_drift import ResponseDriftMetric; print('spaniq core imports clean')"

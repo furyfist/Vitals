@@ -1,0 +1,13 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.env
+*.db
+*.sqlite
+.pytest_cache/
+.ruff_cache/
+claude.md
