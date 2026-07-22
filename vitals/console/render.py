@@ -168,7 +168,8 @@ def render_console_html(
     health_strip_html = (
         f"spans: {spans_rx} received / {spans_sc} scored / {spans_sk} skipped · "
         f"scopes: {n_scopes} · verdicts emitted: {v_emitted} · errors: {emit_errs} · "
-        f"uptime: {uptime_str} · vitals {__version__}"
+        f"uptime: {uptime_str} · vitals {__version__} · "
+        f'<a href="/docs/blind-spots.md" target="_blank" style="color: #71717a; text-decoration: underline;">blind spots</a>'
     )
 
     return f"""<!DOCTYPE html>
