@@ -41,6 +41,8 @@ class EvaluatorThread(threading.Thread):
         cfg,
         cost_engine: CostEngine,
         health: Health,
+        emitter: Emitter | None = None,
+        verdict_snapshot: dict | None = None,
     ) -> None:
         super().__init__(name="EvaluatorThread", daemon=True)
         self._scopes = scopes
@@ -48,6 +50,8 @@ class EvaluatorThread(threading.Thread):
         self._cfg = cfg
         self._cost_engine = cost_engine
         self._health = health
+        self._emitter = emitter
+        self._verdict_snapshot = verdict_snapshot if verdict_snapshot is not None else {}
         self._stop_event = threading.Event()
         self._last_emitted_ts: dict[tuple[tuple, str], float] = {}
 
@@ -96,8 +100,16 @@ class EvaluatorThread(threading.Thread):
                     if should_emit:
                         scope.last_verdict = verdict
                         self._last_emitted_ts[key] = now
+                        self._verdict_snapshot[key] = verdict
                         self._store.insert(verdict)
                         self._health.inc_verdicts_emitted()
+
+                        if self._emitter is not None:
+                            try:
+                                self._emitter.emit_verdict_log(verdict)
+                            except Exception:  # noqa: BLE001
+                                log.exception("evaluator: error emitting verdict log")
+                                self._health.inc_emit_error()
 
                         if verdict.state == VerdictState.CHANGED:
                             log.warning("%s", verdict.sentence)
@@ -123,6 +135,7 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
     store = VerdictStore(cfg.store.path, cfg.store.retain_verdicts)
     scopes: dict[tuple, ScopeState] = {}
     scopes_lock = threading.Lock()
+    verdict_snapshot: dict[tuple, Verdict] = {}
 
     emitter = Emitter(
         endpoint=cfg.emit.endpoint,
@@ -132,6 +145,7 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
             quality_engine.quality_samples if quality_engine else (lambda: [])
         ),
         health_provider=health.snapshot,
+        verdict_provider=lambda: list(verdict_snapshot.values()),
     )
 
     def on_span(span: GenAISpan) -> None:
@@ -167,7 +181,9 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
 
     evaluator = None
     if cfg.verdict.enabled:
-        evaluator = EvaluatorThread(scopes, store, cfg.verdict, cost_engine, health)
+        evaluator = EvaluatorThread(
+            scopes, store, cfg.verdict, cost_engine, health, emitter, verdict_snapshot
+        )
 
     receiver = OTLPReceiver(cfg.receiver.host, cfg.receiver.grpc_port, on_span)
     health.bind_receiver_stats(receiver.stats)
