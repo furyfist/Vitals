@@ -27,6 +27,8 @@ class EvalLogRecord:
     dims: dict[str, str]
     state: str  # "warming" | "scored"
     drift: float | None = None
+    input_drift: float | None = None
+    output_len: int = 0
     consistency: float | None = None
     stability: float | None = None
     score: float | None = None

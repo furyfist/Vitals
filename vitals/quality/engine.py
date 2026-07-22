@@ -79,17 +79,20 @@ class QualityEngine:
 
             if not baseline.ready:
                 baseline.add_warming_output(span.output_text)
+                baseline.add_warming_input(span.input_text or " ")
                 self._latest[tuple(sorted(dims.items()))] = QualityMetricSample(
                     dims=dims, drift=None, consistency=None, stability=None,
                     score=None, drift_onset=0, baseline_ready=False,
                 )
                 return EvalLogRecord(
                     trace_id=span.trace_id, span_id=span.span_id, dims=dims,
-                    state="warming", reason="baseline warming "
+                    state="warming", input_drift=None, output_len=len(span.output_text or ""),
+                    reason="baseline warming "
                     f"({len(baseline.outputs)}/{self._cfg.baseline_window})",
                 )
 
             drift = self._measure_drift(span, baseline)
+            input_drift = self._measure_input_drift(span, baseline)
             consistency, stability = self._measure_optional(span)
             baseline.observe_drift(drift)
             onset = 1 if baseline.onset else 0
@@ -106,7 +109,8 @@ class QualityEngine:
             )
             return EvalLogRecord(
                 trace_id=span.trace_id, span_id=span.span_id, dims=dims, state="scored",
-                drift=drift, consistency=consistency, stability=stability, score=score,
+                drift=drift, input_drift=input_drift, output_len=len(span.output_text or ""),
+                consistency=consistency, stability=stability, score=score,
                 drift_onset=onset, reason=reason,
             )
 
@@ -120,6 +124,20 @@ class QualityEngine:
             return float(self._drift_metric.measure(tc))
         except Exception:  # noqa: BLE001 — never crash the scorer
             log.exception("quality: drift measure failed")
+            return 0.0
+
+    def _measure_input_drift(self, span: GenAISpan, baseline: Baseline) -> float | None:
+        if not baseline.reference_inputs:
+            return None
+        try:
+            tc = LLMTestCase(
+                input=" ",
+                actual_output=span.input_text or " ",
+                baseline_outputs=baseline.reference_inputs,
+            )
+            return float(self._drift_metric.measure(tc))
+        except Exception:  # noqa: BLE001 — never crash the scorer
+            log.exception("quality: input drift measure failed")
             return 0.0
 
     def _measure_optional(self, span: GenAISpan) -> tuple[float | None, float | None]:

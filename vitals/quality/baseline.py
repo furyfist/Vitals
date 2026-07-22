@@ -31,6 +31,7 @@ class Baseline:
         self._h_sigma = h_sigma
 
         self.outputs: list[str] = []
+        self.reference_inputs: list[str] = []
         self.ready = False  # False while warming
 
         self._calib_values: list[float] = []
@@ -48,6 +49,12 @@ class Baseline:
         self.outputs.append(output)
         if len(self.outputs) >= self._window:
             self.ready = True
+
+    def add_warming_input(self, text: str) -> None:
+        """Collect an input into reference inputs; freeze when full."""
+        if len(self.reference_inputs) >= self._window:
+            return
+        self.reference_inputs.append(text)
 
     def observe_drift(self, drift: float) -> bool:
         """Feed one post-warming drift value into CUSUM. Returns True on the first
