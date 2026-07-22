@@ -91,3 +91,10 @@ class CostEngine:
                     )
                 )
         return out
+
+    def velocity_for(self, dims: dict[str, str], now: float | None = None) -> float:
+        """USD/min velocity for specific dimensions."""
+        now = time.monotonic() if now is None else now
+        key = _dim_key(dims)
+        with self._lock:
+            return self._velocity(key, now)

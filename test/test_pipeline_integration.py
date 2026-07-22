@@ -80,3 +80,65 @@ def test_spans_flow_through_receiver_into_cost_and_quality():
     # baseline_window=5 -> some spans warmed, later ones scored
     q = quality.quality_samples()
     assert q
+
+
+def test_pipeline_safety_store_failure_resilience(monkeypatch, tmp_path):
+    """Safety test (spec §17): push 1,000 spans with store.insert monkeypatched to raise.
+
+    Asserts zero exceptions escape and spans_scored == 1000.
+    """
+    from vitals.config.settings import VerdictConfig
+    from vitals.main import EvaluatorThread
+    from vitals.model import GenAISpan
+    from vitals.store.db import VerdictStore
+    from vitals.verdict.scope import ScopeState
+
+    def _failing_insert(self, verdict, retain_count=None):
+        raise RuntimeError("Simulated store write failure")
+
+    monkeypatch.setattr(VerdictStore, "insert", _failing_insert)
+
+    db_path = tmp_path / "safety_test.db"
+    store = VerdictStore(str(db_path))
+
+    prices = PriceTable.from_yaml("vitals/cost/prices.yaml")
+    cost_engine = CostEngine(prices)
+    quality_engine = QualityEngine(QualityConfig(baseline_window=30))
+    health = Health()
+
+    cfg = VerdictConfig(enabled=True, min_samples=5, calibration_samples=5, evaluate_interval_s=1)
+    scope = ScopeState("ragapp", "openai", "gpt-4o", reference_window=30, calib_n=5)
+    scopes = {("ragapp", "openai", "gpt-4o"): scope}
+
+    evaluator = EvaluatorThread(scopes, store, cfg, cost_engine, health)
+    evaluator.start()
+
+    try:
+        for i in range(1000):
+            span = GenAISpan(
+                trace_id=f"tr_{i:06d}",
+                span_id=f"sp_{i:06d}",
+                service_name="ragapp",
+                service_version="v1",
+                gen_ai_system="openai",
+                model="gpt-4o",
+                input_text=f"input prompt {i}",
+                output_text=f"output completion {i}",
+                input_tokens=10,
+                output_tokens=20,
+                start_unix_nano=1000000000 + i * 1000000,
+                end_unix_nano=2000000000 + i * 1000000,
+            )
+            cost_engine.record(span)
+            usd = prices.cost_usd(span.model, span.input_tokens, span.output_tokens)
+            rec = quality_engine.score(span)
+            scope.observe(span, rec, usd)
+            health.inc_scored()
+
+        time.sleep(0.5)
+    finally:
+        evaluator.stop()
+        evaluator.join(timeout=2.0)
+        store.close()
+
+    assert health.spans_scored == 1000

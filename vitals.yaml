@@ -26,3 +26,29 @@ quality:
   weight_drift: 0.6
   weight_consistency: 0.2
   weight_stability: 0.2
+
+verdict:
+  enabled: true
+  evaluate_interval_s: 10     # tick period
+  window_s: 300               # current-window lookback
+  window_max: 500             # per-version rolling record cap
+  min_samples: 30             # G1 floor
+  sigma_threshold: 3.0        # CHANGED entry
+  consecutive_ticks: 2        # hysteresis (bypassed by runaway)
+  min_hold_s: 120             # CHANGED -> STEADY dwell
+  heartbeat_s: 60             # re-emit unchanged verdict
+  runaway_ratio: 20.0         # velocity multiple -> immediate CHANGED
+  attribution_window_s: 300   # deploy->onset window for RELEASE cause
+  length_caveat_pct: 0.25     # G3 caveat trigger
+  calibration_samples: 30     # per-signal calibration window
+  exemplars_worst: 2
+  exemplars_median: 1
+
+console:
+  enabled: true
+  host: 127.0.0.1
+  port: 8787
+
+store:
+  path: vitals.db
+  retain_verdicts: 1000

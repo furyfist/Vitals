@@ -1,9 +1,9 @@
 {
-  "alert": "Vitals: per-version quality regression",
+  "alert": "Vitals: verdict changed",
   "alertType": "METRIC_BASED_ALERT",
-  "description": "Composite quality score fell below 0.6 for a service.version. Compare v1/v2 on the Release Compare dashboard.",
+  "description": "{{service.name}} {{service.version}} — VERDICT CHANGED\nbehavior {{vitals.behavior_sigma}}σ · cost {{vitals.cost_sigma}}σ\ncause: {{vitals.cause}} · subject: {{vitals.subject}} · n={{vitals.samples}}\nrunaway: {{vitals.runaway}}\nFull record: vitals verdict log, trace-linked.",
   "ruleType": "threshold_rule",
-  "evalWindow": "10m0s",
+  "evalWindow": "1m0s",
   "frequency": "1m0s",
   "condition": {
     "compositeQuery": {
@@ -16,15 +16,15 @@
             "queryName": "A",
             "expression": "A",
             "disabled": false,
-            "aggregateOperator": "avg",
+            "aggregateOperator": "max",
             "aggregateAttribute": {
-              "key": "gen_ai.evaluation.score",
+              "key": "vitals.verdict.state",
               "dataType": "float64",
               "type": "Gauge",
               "isColumn": true
             },
-            "timeAggregation": "avg",
-            "spaceAggregation": "avg",
+            "timeAggregation": "max",
+            "spaceAggregation": "max",
             "filters": {
               "op": "AND",
               "items": []
@@ -50,8 +50,8 @@
         "queryFormulas": []
       }
     },
-    "op": "<",
-    "target": 0.6,
+    "op": ">=",
+    "target": 2,
     "matchType": "1",
     "targetUnit": ""
   },
@@ -60,7 +60,7 @@
     "source": "vitals"
   },
   "annotations": {
-    "description": "Composite quality score fell below 0.6 for a service.version. Compare v1/v2 on the Release Compare dashboard.",
-    "summary": "Vitals: per-version quality regression"
+    "description": "{{service.name}} {{service.version}} — VERDICT CHANGED\nbehavior {{vitals.behavior_sigma}}σ · cost {{vitals.cost_sigma}}σ\ncause: {{vitals.cause}} · subject: {{vitals.subject}} · n={{vitals.samples}}\nrunaway: {{vitals.runaway}}\nFull record: vitals verdict log, trace-linked.",
+    "summary": "{{service.name}} {{service.version}} — VERDICT CHANGED"
   }
 }

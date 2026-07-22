@@ -1,81 +1,95 @@
-# Vitals demo — run-of-show
+# Vitals Demo & Replay Guide
 
-Two beats, one pipeline. Every number is reproducible: run the scenarios yourself and
-watch the Vitals dashboards in SigNoz.
-
-## Prerequisites
-
-- Docker Desktop running.
-- **SigNoz already up** on the host (self-hosted compose or Cloud trial), OTLP ingest on
-  `localhost:4317`, UI on `localhost:8080`.
-- A Groq API key (free at https://console.groq.com). Optional — without it the app serves
-  deterministic canned answers so the pipeline still flows.
-
-## Setup
-
-```bash
-cp demo/.env.example demo/.env        # add GROQ_API_KEY (optional)
-docker compose -f demo/compose.yaml up --build -d
-```
-
-This starts three services alongside your existing SigNoz:
-
-| service | role |
-|---|---|
-| `ragapp` | Groq RAG app on :8000, emits gen_ai spans to the collector |
-| `collector` | OTel Collector — **fans out** spans to SigNoz **and** vitals |
-| `vitals` | the sidecar: scores spans, emits cost + quality signals out-of-band to SigNoz |
-
-Import the dashboards and alerts (SigNoz UI → Dashboards → Import JSON):
-`assets/dashboards/*.json`, `assets/alerts/*.json`.
-
-Warm the quality baseline once (healthy v1 traffic):
-
-```bash
-python demo/scenarios/runaway_loop.py --rate 3 --duration 60
-```
+Every scenario in Vitals is 100% reproducible — either live through Docker Compose or instantly via deterministic `vitals replay` fixtures without external network calls or Groq API keys.
 
 ---
 
-## Beat 1 — the hook: cost
+## Quickstart A — Instant Replay Scenarios (No Docker needed)
+
+Vitals includes a deterministic replay engine (`vitals replay <fixture>`) that replays pre-recorded OTLP spans through the full scoring and verdict engine.
+
+### 1. Run Vitals Sidecar with Console Enabled
 
 ```bash
-python demo/scenarios/runaway_loop.py --rate 20 --duration 120
+python -m vitals.main run --config vitals.yaml
 ```
 
-On **Vitals — Overview**, `vitals.cost.velocity` (USD/min) spirals upward. The
-**cost velocity** alert fires at the threshold — in minutes, not on the invoice.
+Open the **Vitals Console** in your browser: [http://localhost:8787](http://localhost:8787)
 
-> *"A 4-agent loop burned \$47,000 over 11 days with dashboards green. \$47K incidents end here."*
-
-## Beat 2 — the payoff: quality
-
-Deploy the poisoned prompt (v2). **No model change. Tokens stay normal. Infra stays green.**
+### 2. Replay Scenarios in a Second Terminal
 
 ```bash
+# Scenario 1: Steady Baseline (Verdict: STEADY)
+python -m vitals.main replay demo/fixtures/01_steady_baseline.jsonl --speed 10.0
+
+# Scenario 2: Release Regression (Verdict: CHANGED · Cause: RELEASE)
+python -m vitals.main replay demo/fixtures/02_release_regression.jsonl --speed 10.0
+
+# Scenario 3: Runaway Cost Loop (Verdict: CHANGED · Runaway: TRUE)
+python -m vitals.main replay demo/fixtures/03_runaway_loop.jsonl --speed 10.0
+
+# Scenario 4: User Traffic Shift (Verdict: INCONCLUSIVE · Guard: INPUT_SHIFT)
+python -m vitals.main replay demo/fixtures/04_input_shift.jsonl --speed 10.0
+```
+
+Watch the **Hero Verdict Card** on `http://localhost:8787` update live with state colors, sigma meter bars, falsifier statements, and evidence exemplars!
+
+---
+
+## Quickstart B — Live RAG Application with Docker & SigNoz
+
+### Prerequisites
+- Docker Desktop running.
+- **SigNoz** running on `localhost:4317` (OTLP gRPC) and UI on `localhost:8080`.
+- (Optional) `GROQ_API_KEY` in `demo/.env`.
+
+### 1. Launch Services
+
+```bash
+cp demo/.env.example demo/.env
+docker compose -f demo/compose.yaml up --build -d
+```
+
+Services started:
+| Service | Address | Role |
+|---|---|---|
+| `ragapp` | `:8000` | RAG service emitting `gen_ai` semantic spans |
+| `collector` | `:4317` | OTel Collector fanning out to SigNoz and Vitals |
+| `vitals` | `:8787` | Vitals sidecar with Console and SigNoz OTLP emitter |
+
+### 2. Import SigNoz Assets
+
+Import in SigNoz UI (`Dashboards -> Import JSON` & `Alerts -> Import JSON`):
+- Dashboard: `assets/dashboards/release-compare.json`
+- Alert Rule: `assets/alerts/verdict-changed.json`
+
+### 3. Run Live Traffic Scenarios
+
+```bash
+# Steady traffic (Topic A)
+python demo/scenarios/steady_traffic.py --rate 2 --count 50
+
+# Deploy poisoned prompt (v2) and observe CHANGED verdict
 bash demo/scenarios/deploy_v2.sh
-python demo/scenarios/runaway_loop.py --rate 5 --duration 180
+python demo/scenarios/steady_traffic.py --rate 2 --count 50
+
+# Runaway loop simulation
+python demo/scenarios/runaway_loop.py --rate 20 --duration 60
+
+# Input shift simulation (Topic B queries)
+python demo/scenarios/traffic_shift.py --rate 2 --count 50
 ```
 
-On **Vitals — Drift**, the drift line bends and a **CUSUM onset marker** appears. On
-**Vitals — Release Compare**, v1 and v2 split — v2's quality score drops while v1 holds.
-The **quality drift onset** alert pages.
-
-> *"Anthropic shipped this exact failure in April and found out from user complaints.*
-> *Cost to detect: \$0.00."*
-
-Close on the convention: *"and we wrote down the standard so everyone can emit this"* —
-[docs/conventions.md](../docs/conventions.md).
-
-## Reset
+### 4. Reset Environment
 
 ```bash
 bash demo/scenarios/reset.sh
 ```
 
-Redeploys v1 and restarts vitals so baselines re-warm. SigNoz data is left intact.
+---
 
-## Honesty note (say it first)
+## Understanding the Vitals Console (`:8787`)
 
-Vitals measures **deviation from a healthy baseline**, not absolute correctness — the
-exact signal behind every silent-regression incident. See [docs/honesty.md](../docs/honesty.md).
+- **Zone 1 (Hero Verdict Card)**: Shows current state (`WARMING`, `STEADY`, `CHANGED`, `INCONCLUSIVE`), behavior/cost sigmas (`+4.2σ`), falsifier line, and **worst + median evidence exemplars**.
+- **Zone 2 (Verdict Feed)**: Historical feed of up to 50 stored verdicts with expandable JSON details.
+- **Zone 3 (Health Strip)**: Live counters for spans received/scored/skipped, scopes, verdicts emitted, errors, and uptime.

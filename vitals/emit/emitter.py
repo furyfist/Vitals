@@ -9,6 +9,7 @@ response and correlate to the original trace via trace_id/span_id.
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -27,12 +28,14 @@ from opentelemetry.sdk.resources import Resource
 from vitals import contract
 from vitals.cost.engine import CostSample
 from vitals.quality.types import EvalLogRecord, QualityMetricSample
+from vitals.verdict.types import Verdict
 
 log = logging.getLogger(__name__)
 
 CostProvider = Callable[[], list[CostSample]]
 QualityProvider = Callable[[], list[QualityMetricSample]]
 HealthProvider = Callable[[], dict[str, float]]
+VerdictProvider = Callable[[], list[Verdict]]
 
 
 def _obs(value: float | None, dims: dict[str, str]) -> Observation | None:
@@ -49,12 +52,14 @@ class Emitter:
         cost_provider: CostProvider,
         quality_provider: QualityProvider,
         health_provider: HealthProvider,
+        verdict_provider: VerdictProvider | None = None,
         insecure: bool = True,
     ):
         self._resource = Resource.create({"service.name": contract.SCOPE_NAME})
         self._cost_provider = cost_provider
         self._quality_provider = quality_provider
         self._health_provider = health_provider
+        self._verdict_provider = verdict_provider
 
         # --- metrics: direct OTLP gRPC to SigNoz ingest ---
         metric_exporter = OTLPMetricExporter(endpoint=endpoint, insecure=insecure)
@@ -148,6 +153,58 @@ class Emitter:
             "vitals.health", callbacks=[health], unit="1"
         )
 
+        # --- verdict metric gauges (V2 additive) ---
+        def v_field(getter):
+            def cb(_: CallbackOptions):
+                if not self._verdict_provider:
+                    return []
+                obs_list = []
+                for v in self._verdict_provider():
+                    val = getter(v)
+                    if val is None:
+                        continue
+                    dims = {
+                        contract.SERVICE_NAME: v.service_name,
+                        contract.SERVICE_VERSION: v.version,
+                        contract.GEN_AI_SYSTEM: v.gen_ai_system,
+                        contract.GEN_AI_MODEL: v.model,
+                        contract.ATTR_SUBJECT: v.subject.value,
+                        contract.ATTR_CAUSE: v.cause.value,
+                        contract.ATTR_FLAG_COST: v.flag_cost,
+                        contract.ATTR_FLAG_BEHAVIOR: v.flag_behavior,
+                        contract.ATTR_RUNAWAY: v.runaway,
+                    }
+                    obs_list.append(Observation(float(val), attributes=dims))
+                return obs_list
+
+            return cb
+
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_STATE,
+            callbacks=[v_field(lambda v: contract.VERDICT_STATE_NUM.get(v.state.value, 0))],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_BEHAVIOR_SIGMA,
+            callbacks=[v_field(lambda v: v.behavior_sigma)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_COST_SIGMA,
+            callbacks=[v_field(lambda v: v.cost_sigma)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_VELOCITY_RATIO,
+            callbacks=[v_field(lambda v: v.velocity_ratio)],
+            unit="1",
+        )
+        meter.create_observable_gauge(
+            contract.METRIC_VERDICT_SAMPLES,
+            callbacks=[v_field(lambda v: v.samples)],
+            unit="1",
+        )
+
     # -------------------------------------------------------------------- logs
     def emit_eval_log(self, rec: EvalLogRecord) -> None:
         attrs: dict[str, object] = dict(rec.dims)
@@ -182,6 +239,87 @@ class Emitter:
             severity_number=SeverityNumber.INFO,
             severity_text="INFO",
             body=f"vitals eval {rec.state}: {rec.reason}",
+            attributes=attrs,
+        )
+        self._logger.emit(record)
+
+    def emit_verdict_log(self, verdict: Verdict) -> None:
+        """Emit a trace-linked verdict log record (spec §8.2)."""
+        attrs: dict[str, object] = {
+            contract.SERVICE_NAME: verdict.service_name,
+            contract.SERVICE_VERSION: verdict.version,
+            contract.GEN_AI_SYSTEM: verdict.gen_ai_system,
+            contract.GEN_AI_MODEL: verdict.model,
+            "vitals.verdict_id": verdict.verdict_id,
+            "vitals.ts_unix": verdict.ts_unix,
+            "vitals.state": verdict.state.value,
+            "vitals.subject": verdict.subject.value,
+            "vitals.cause": verdict.cause.value,
+            "vitals.flag_cost": verdict.flag_cost,
+            "vitals.flag_behavior": verdict.flag_behavior,
+            "vitals.runaway": verdict.runaway,
+            "vitals.samples": verdict.samples,
+            "vitals.baseline_samples": verdict.baseline_samples,
+            contract.ATTR_FALSIFIER: verdict.falsifier,
+            contract.ATTR_CAVEATS: ",".join(verdict.caveats) if verdict.caveats else "",
+        }
+
+        for k, v in (
+            ("vitals.baseline_version", verdict.baseline_version),
+            ("vitals.behavior_sigma", verdict.behavior_sigma),
+            ("vitals.cost_sigma", verdict.cost_sigma),
+            ("vitals.cost_usd_per_req", verdict.cost_usd_per_req),
+            ("vitals.baseline_cost_usd_per_req", verdict.baseline_cost_usd_per_req),
+            ("vitals.velocity_ratio", verdict.velocity_ratio),
+            ("vitals.onset_ts_unix", verdict.onset_ts_unix),
+            ("vitals.seconds_after_deploy", verdict.seconds_after_deploy),
+            (
+                "vitals.inconclusive_reason",
+                verdict.inconclusive_reason.value if verdict.inconclusive_reason else None,
+            ),
+        ):
+            if v is not None:
+                attrs[k] = v
+
+        if verdict.exemplars:
+            ex_dicts = [
+                {
+                    "kind": ex.kind,
+                    "trace_id": ex.trace_id,
+                    "span_id": ex.span_id,
+                    "excerpt": ex.output_excerpt,
+                    "sigma": ex.behavior_sigma,
+                }
+                for ex in verdict.exemplars
+            ]
+            ex_json = json.dumps(ex_dicts)
+            attrs[contract.ATTR_EXEMPLARS] = ex_json[:2048]
+
+        # Trace link to the worst exemplar
+        worst_ex = next((ex for ex in verdict.exemplars if ex.kind == "worst"), None)
+        if worst_ex is None and verdict.exemplars:
+            worst_ex = verdict.exemplars[0]
+
+        trace_id_str = worst_ex.trace_id if worst_ex else ""
+        span_id_str = worst_ex.span_id if worst_ex else ""
+
+        try:
+            trace_id_int = int(trace_id_str, 16) if trace_id_str else 0
+            span_id_int = int(span_id_str, 16) if span_id_str else 0
+        except ValueError:
+            trace_id_int = span_id_int = 0
+
+        is_changed = verdict.state.value == "changed"
+        sev_num = SeverityNumber.WARN if is_changed else SeverityNumber.INFO
+        sev_text = "WARN" if is_changed else "INFO"
+
+        record = LogRecord(
+            timestamp=int(verdict.ts_unix * 1e9),
+            trace_id=trace_id_int,
+            span_id=span_id_int,
+            severity_number=sev_num,
+            severity_text=sev_text,
+            body=verdict.sentence,
             attributes=attrs,
         )
         self._logger.emit(record)
