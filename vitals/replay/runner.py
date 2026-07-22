@@ -46,7 +46,7 @@ def run_replay(
                 time.sleep(sleep_time)
         last_rel_ts = rel_ts
 
-        virtual_now = start_real_ts + (rel_ts if speed > 0 else 0.0)
+        virtual_now = start_real_ts + rel_ts
         if on_span_cb is not None:
             on_span_cb(span, virtual_now)
 

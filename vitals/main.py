@@ -153,8 +153,8 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
         verdict_provider=lambda: list(verdict_snapshot.values()),
     )
 
-    def on_span(span: GenAISpan) -> None:
-        cost_engine.record(span)
+    def on_span(span: GenAISpan, now: float | None = None) -> None:
+        cost_engine.record(span, now=now)
         usd = price_table.cost_usd(span.model, span.input_tokens, span.output_tokens)
 
         key = (span.service_name, span.gen_ai_system, span.model)
@@ -175,7 +175,7 @@ def build_pipeline(config_path: str | None = "vitals.yaml"):
         if quality_engine is not None:
             try:
                 rec = quality_engine.score(span)
-                scope.observe(span, rec, usd)
+                scope.observe(span, rec, usd, now=now)
                 emitter.emit_eval_log(rec)
                 health.inc_scored()
                 if rec.state == "scored":
@@ -286,7 +286,11 @@ def replay_cmd(
         console_thread.start()
 
     try:
-        n = run_replay(fixture_path, speed=speed, on_span_cb=lambda span, _: on_span_cb(span))
+        n = run_replay(
+            fixture_path,
+            speed=speed,
+            on_span_cb=lambda span, virtual_now: on_span_cb(span, now=virtual_now),
+        )
         log.info("Replay completed: %d spans processed", n)
         # Give evaluator time for final tick if needed
         time.sleep(1.0)
