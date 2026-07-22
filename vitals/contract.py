@@ -32,6 +32,25 @@ METRIC_HEALTH_SPANS_SCORED = "vitals.health.spans_scored"
 METRIC_HEALTH_SPANS_SKIPPED = "vitals.health.spans_skipped"  # malformed / non-gen_ai
 METRIC_HEALTH_EMIT_ERRORS = "vitals.health.emit_errors"
 METRIC_HEALTH_BASELINE_STATE = "vitals.health.baseline_state"  # 0=warming, 1=ready
+METRIC_HEALTH_SCOPES = "vitals.health.scopes"  # live scope count
+METRIC_HEALTH_VERDICTS_EMITTED = "vitals.health.verdicts_emitted"
+
+# --- Verdict metrics (vitals.verdict.*) (V2 additive) ---
+METRIC_VERDICT_STATE = "vitals.verdict.state"  # 0=warming, 1=steady, 2=changed, 3=inconclusive
+METRIC_VERDICT_BEHAVIOR_SIGMA = "vitals.verdict.behavior_sigma"  # signed
+METRIC_VERDICT_COST_SIGMA = "vitals.verdict.cost_sigma"  # signed
+METRIC_VERDICT_VELOCITY_RATIO = "vitals.verdict.velocity_ratio"  # current / baseline burn rate
+METRIC_VERDICT_SAMPLES = "vitals.verdict.samples"  # window n
+
+# --- Verdict attribute names ---
+ATTR_SUBJECT = "vitals.subject"
+ATTR_CAUSE = "vitals.cause"
+ATTR_FLAG_COST = "vitals.flag_cost"
+ATTR_FLAG_BEHAVIOR = "vitals.flag_behavior"
+ATTR_RUNAWAY = "vitals.runaway"
+ATTR_FALSIFIER = "vitals.falsifier"
+ATTR_CAVEATS = "vitals.caveats"
+ATTR_EXEMPLARS = "vitals.exemplars"
 
 # --- Eval log record schema (one per scored response, trace_id-linked) ---
 # SigNoz native logs<->traces correlation keys off trace_id / span_id.
@@ -49,5 +68,14 @@ LOG_ATTR_REASON = "gen_ai.evaluation.reason"  # human-readable, e.g. "PSI 0.03 <
 STATE_WARMING = "warming"  # baseline window not yet full — never emit a score
 STATE_SCORED = "scored"
 
+# Verdict state enum numeric mapping for metrics:
+VERDICT_STATE_NUM = {
+    "warming": 0,
+    "steady": 1,
+    "changed": 2,
+    "inconclusive": 3,
+}
+
 # The instrumentation scope name stamped on all Vitals-emitted telemetry.
 SCOPE_NAME = "vitals"
+
