@@ -9,8 +9,11 @@ import ScopesScreen from "./screens/ScopesScreen";
 const AppLayout: React.FC = () => {
   return (
     <>
+      <a href="#main-content" className="visually-hidden focus-visible">
+        Skip to content
+      </a>
       <AppHeader />
-      <main style={{ flex: 1 }}>
+      <main id="main-content" style={{ flex: 1 }}>
         <Outlet />
       </main>
     </>

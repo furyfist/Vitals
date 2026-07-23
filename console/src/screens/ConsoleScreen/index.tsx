@@ -1,6 +1,6 @@
 import { Activity, TriangleAlert } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AlertCallout from "@/components/AlertCallout";
 import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
@@ -30,6 +30,7 @@ import type { VerdictState } from "@/lib/api/types";
 
 export const ConsoleScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { verdictId } = useParams<{ verdictId?: string }>();
 
   const { filters, isPaused, toggleStateFilter, setSort, clearFilters, hasActiveFilters, togglePaused } =
@@ -47,13 +48,12 @@ export const ConsoleScreen: React.FC = () => {
 
   const services = Array.from(new Set(verdicts.map((v) => v.service_name)));
 
-
   const handleOpenDrawer = (id: string) => {
-    navigate(`/v/${encodeURIComponent(id)}`);
+    navigate(`/v/${encodeURIComponent(id)}${location.search}`);
   };
 
   const handleCloseDrawer = () => {
-    navigate("/");
+    navigate({ pathname: "/", search: location.search });
   };
 
   const { focusedIndex } = useFeedKeyboard({
