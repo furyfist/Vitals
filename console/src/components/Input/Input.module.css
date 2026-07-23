@@ -1,0 +1,87 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 var(--space-3);
+  transition: border-color var(--dur-instant) var(--ease-out);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.sizeMd {
+  height: 32px;
+}
+
+.sizeLg {
+  height: 40px;
+}
+
+.hasLeadingIcon {
+  padding-left: 32px;
+}
+
+.hasTrailingButton {
+  padding-right: 32px;
+}
+
+.leadingIcon {
+  position: absolute;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.trailingButton {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.trailingButton:hover {
+  color: var(--color-text);
+  background-color: var(--color-surface-subtle);
+}
+
+.inputError {
+  border-color: var(--color-error-dot);
+}
+
+.errorMessage {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-error-text);
+}
