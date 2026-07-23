@@ -1,5 +1,5 @@
 import { ListFilter } from "lucide-react";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import Badge from "@/components/Badge";
 import EmptyState from "@/components/EmptyState";
 import type { Verdict } from "@/lib/api/types";
@@ -30,7 +30,7 @@ export const VerdictFeed: React.FC<VerdictFeedProps> = ({
   headerSlot,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const rowHeight = density === "compact" ? 36 : 44;
+
 
   if (isLoading) {
     return (

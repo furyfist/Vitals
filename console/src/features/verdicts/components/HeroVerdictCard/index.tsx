@@ -116,10 +116,11 @@ export const HeroVerdictCard: React.FC<HeroVerdictCardProps> = ({
             style={{
               marginTop: "12px",
               fontSize: "14px",
-              line-height: "22px",
+              lineHeight: "22px",
               color: "var(--color-text-secondary)",
             }}
           >
+
             Vitals is establishing a healthy baseline. No verdict will be issued until it has one.
           </p>
         </div>

@@ -1,4 +1,5 @@
-import { CircleHelp, Copy, X } from "lucide-react";
+import { CircleHelp, X } from "lucide-react";
+
 import React, { useEffect } from "react";
 import AlertCallout from "@/components/AlertCallout";
 import Badge from "@/components/Badge";

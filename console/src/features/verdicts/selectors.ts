@@ -110,10 +110,11 @@ export function selectVerdictCounts(
 export function selectMostSevereScopeState(scopes: Scope[]): VerdictState {
   if (!scopes || scopes.length === 0) return "STEADY";
 
-  const states = scopes.map((s) => (s.live ? "STEADY" : "WARMING"));
+  const states: VerdictState[] = scopes.map((s) => (s.live ? "STEADY" : "WARMING"));
 
-  if (states.includes("CHANGED" as VerdictState)) return "CHANGED";
-  if (states.includes("INCONCLUSIVE" as VerdictState)) return "INCONCLUSIVE";
-  if (states.includes("WARMING" as VerdictState)) return "WARMING";
+  if (states.includes("CHANGED")) return "CHANGED";
+  if (states.includes("INCONCLUSIVE")) return "INCONCLUSIVE";
+  if (states.includes("WARMING")) return "WARMING";
   return "STEADY";
 }
+
