@@ -1,13 +1,22 @@
-import React from "react";
+import type React from "react";
 import { RouterProvider } from "react-router-dom";
-import { QueryProvider } from "./providers/QueryProvider";
+import ErrorBoundary from "./components/ErrorBoundary";
+import AnnouncerProvider from "./providers/AnnouncerProvider";
+import QueryProvider from "./providers/QueryProvider";
+import ToastProvider from "./providers/ToastProvider";
 import { router } from "./router";
 
 export const App: React.FC = () => {
   return (
-    <QueryProvider>
-      <RouterProvider router={router} />
-    </QueryProvider>
+    <ErrorBoundary>
+      <AnnouncerProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
+        </QueryProvider>
+      </AnnouncerProvider>
+    </ErrorBoundary>
   );
 };
 
