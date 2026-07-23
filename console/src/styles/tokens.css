@@ -1,0 +1,108 @@
+:root {
+  /* 2.1 Color — Neutrals */
+  --color-canvas: #FBFBFA;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F7F7F6;
+  --color-surface-inset: #F1F1EF;
+  --color-surface-raised: #FFFFFF;
+  --color-border-subtle: #EDEDEA;
+  --color-border: #E2E2DE;
+  --color-border-strong: #CBCBC5;
+  --color-text: #18181B;
+  --color-text-secondary: #57575F;
+  --color-text-tertiary: #8A8A92;
+  --color-text-disabled: #B6B6BC;
+  --color-overlay: rgba(24, 24, 27, 0.32);
+
+  /* 2.2 Color — Accent */
+  --color-accent: #1A56DB;
+  --color-accent-hover: #1546B4;
+  --color-accent-active: #113A96;
+  --color-accent-subtle: #EBF1FE;
+  --color-accent-border: #C3D6FB;
+  --color-accent-text: #1546B4;
+
+  /* 2.3 Color — Status (1:1 VerdictState) */
+  --color-steady-dot: #16A34A;
+  --color-steady-text: #146C33;
+  --color-steady-bg: #F1FDF4;
+  --color-steady-border: #BBF0CC;
+
+  --color-changed-dot: #F59E0B;
+  --color-changed-text: #96590C;
+  --color-changed-bg: #FFFAEB;
+  --color-changed-border: #FBE3A6;
+
+  --color-inconclusive-dot: #3B82F6;
+  --color-inconclusive-text: #1D4ED8;
+  --color-inconclusive-bg: #EFF5FF;
+  --color-inconclusive-border: #C2D8FC;
+
+  --color-warming-dot: #8A8A92;
+  --color-warming-text: #57575F;
+  --color-warming-bg: #F5F5F3;
+  --color-warming-border: #E2E2DE;
+
+  --color-error-dot: #DC2626;
+  --color-error-text: #A81E1E;
+  --color-error-bg: #FEF2F2;
+  --color-error-border: #F8CFCF;
+
+  /* 2.4 Color — Chart Palette */
+  --chart-1: #1A56DB;
+  --chart-2: #0E9F6E;
+  --chart-3: #F59E0B;
+  --chart-4: #0891B2;
+  --chart-5: #C2410C;
+  --chart-6: #64748B;
+
+  /* 2.5 Spacing */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* 2.6 Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-full: 9999px;
+
+  /* 2.7 Shadows */
+  --shadow-xs: 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-sm: 0 1px 3px rgba(24, 24, 27, 0.06), 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.07), 0 1px 3px rgba(24, 24, 27, 0.05);
+  --shadow-lg: 0 12px 28px rgba(24, 24, 27, 0.10), 0 2px 6px rgba(24, 24, 27, 0.05);
+  --shadow-xl: 0 24px 56px rgba(24, 24, 27, 0.14), 0 4px 10px rgba(24, 24, 27, 0.06);
+
+  /* 2.8 Typography Families */
+  --font-sans: "Inter var", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* 3.1 Motion Durations & Easings */
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+  --dur-slower: 460ms;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* 2.10 Layout Constants */
+  --layout-max: 1120px;
+  --layout-gutter: 24px;
+  --header-height: 56px;
+  --drawer-width: 560px;
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--color-accent);
+}
