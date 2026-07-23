@@ -45,6 +45,9 @@ export const ConsoleScreen: React.FC = () => {
   const sorted = selectSortedVerdicts(filtered, filters.sort);
   const counts = selectVerdictCounts(verdicts);
 
+  const services = Array.from(new Set(verdicts.map((v) => v.service_name)));
+
+
   const handleOpenDrawer = (id: string) => {
     navigate(`/v/${encodeURIComponent(id)}`);
   };

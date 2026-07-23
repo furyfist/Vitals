@@ -44,7 +44,7 @@
 /* Variants */
 .variantPrimary {
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   border-color: var(--color-accent);
 }
 
@@ -82,9 +82,10 @@
 
 .variantDanger {
   background-color: var(--color-error-dot);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   border-color: var(--color-error-dot);
 }
+
 
 .variantDanger:hover:not(:disabled) {
   background-color: var(--color-error-text);

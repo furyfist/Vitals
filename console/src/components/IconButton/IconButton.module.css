@@ -32,7 +32,7 @@
 
 .variantPrimary {
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-text-inverse);
 }
 
 .variantPrimary:hover:not(:disabled) {
@@ -64,8 +64,9 @@
 
 .variantDanger {
   background-color: var(--color-error-dot);
-  color: #ffffff;
+  color: var(--color-text-inverse);
 }
+
 
 .iconButton:disabled {
   opacity: 0.5;

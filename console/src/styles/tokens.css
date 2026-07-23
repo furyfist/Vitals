@@ -12,7 +12,9 @@
   --color-text-secondary: #57575F;
   --color-text-tertiary: #8A8A92;
   --color-text-disabled: #B6B6BC;
+  --color-text-inverse: #FFFFFF;
   --color-overlay: rgba(24, 24, 27, 0.32);
+
 
   /* 2.2 Color — Accent */
   --color-accent: #1A56DB;

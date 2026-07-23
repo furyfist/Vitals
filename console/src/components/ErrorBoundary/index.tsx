@@ -1,5 +1,7 @@
 import { TriangleAlert } from "lucide-react";
-import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
+
+
 import Button from "../Button";
 import CodeBlock from "../CodeBlock";
 
