@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run check:budget",
     "preview": "vite preview",
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "check:budget": "node scripts/check-bundle-budget.js",
     "lint:tokens": "node scripts/lint-tokens.js"
   },
   "dependencies": {
