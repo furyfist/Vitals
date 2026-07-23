@@ -66,6 +66,14 @@ export const Drawer: React.FC<DrawerProps> = ({
             aria-labelledby={ariaLabelledBy}
             onClick={(e) => e.stopPropagation()}
             className={`${styles.drawer} ${isMobile ? styles.bottomSheet : ""}`}
+            drag={isMobile ? "y" : false}
+            dragConstraints={isMobile ? { top: 0, bottom: 0 } : undefined}
+            dragElastic={isMobile ? { top: 0, bottom: 0.5 } : undefined}
+            onDragEnd={(_, info) => {
+              if (isMobile && info.offset.y > 120) {
+                onClose();
+              }
+            }}
             initial={
               reducedMotion
                 ? { opacity: 0 }

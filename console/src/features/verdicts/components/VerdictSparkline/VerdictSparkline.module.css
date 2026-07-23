@@ -71,6 +71,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   white-space: nowrap;
+  max-width: 240px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;

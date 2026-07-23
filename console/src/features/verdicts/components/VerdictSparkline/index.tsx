@@ -86,17 +86,31 @@ export const VerdictSparkline: React.FC<VerdictSparklineProps> = ({
   const behaviorPath = buildPath(behaviorValues);
   const costPath = buildPath(costValues);
 
-  // Mouse hover tracking
+  const rafRef = useRef<number | null>(null);
+
+  // Mouse hover tracking throttled via rAF (§9.2)
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const ratio = Math.max(0, Math.min(1, mouseX / rect.width));
-    const closestIdx = Math.round(ratio * (n - 1));
-    setHoverIndex(closestIdx);
+    const clientX = e.clientX;
+
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    rafRef.current = requestAnimationFrame(() => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const mouseX = clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, mouseX / rect.width));
+      const closestIdx = Math.round(ratio * (n - 1));
+      setHoverIndex(closestIdx);
+    });
   };
 
   const handleMouseLeave = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
     setHoverIndex(null);
   };
 
@@ -115,7 +129,7 @@ export const VerdictSparkline: React.FC<VerdictSparklineProps> = ({
           <button
             type="button"
             className={styles.legendItem}
-            style={{ opacity: showBehavior ? 1 : 0.3 }}
+            style={{ opacity: showBehavior ? 1 : 0.15 }}
             onClick={() => setShowBehavior(!showBehavior)}
           >
             <span className={styles.legendDash} style={{ backgroundColor: "var(--chart-1)" }} />
@@ -124,7 +138,7 @@ export const VerdictSparkline: React.FC<VerdictSparklineProps> = ({
           <button
             type="button"
             className={styles.legendItem}
-            style={{ opacity: showCost ? 1 : 0.3 }}
+            style={{ opacity: showCost ? 1 : 0.15 }}
             onClick={() => setShowCost(!showCost)}
           >
             <span className={styles.legendDash} style={{ backgroundColor: "var(--chart-2)" }} />

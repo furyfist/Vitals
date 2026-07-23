@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import styles from "./Button.module.css";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -27,6 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    const reducedMotion = useReducedMotion();
     const sizeClass =
       size === "sm" ? styles.sizeSm : size === "lg" ? styles.sizeLg : styles.sizeMd;
     const variantClass =
@@ -46,7 +48,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span className={styles.spinner} role="status" aria-label="Loading" />
+          reducedMotion ? (
+            <span style={{ fontSize: "12px", color: "currentColor" }} role="status">
+              Loading…
+            </span>
+          ) : (
+            <span className={styles.spinner} role="status" aria-label="Loading" />
+          )
         ) : (
           <>
             {leftIcon}
