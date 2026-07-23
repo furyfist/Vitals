@@ -14,6 +14,8 @@ import HeroCardSkeleton from "@/features/verdicts/components/HeroCardSkeleton";
 import HeroVerdictCard from "@/features/verdicts/components/HeroVerdictCard";
 import NewVerdictsPill from "@/features/verdicts/components/NewVerdictsPill";
 import VerdictFeed from "@/features/verdicts/components/VerdictFeed";
+import VerdictSparkline from "@/features/verdicts/components/VerdictSparkline";
+
 import {
   selectFilteredVerdicts,
   selectLatestVerdict,
@@ -113,8 +115,17 @@ export const ConsoleScreen: React.FC = () => {
         />
       ) : null}
 
+      {/* SVG Sparkline (§9.2) */}
+      {verdicts.length >= 2 && (
+        <VerdictSparkline
+          verdicts={sorted}
+          onSelectVerdict={handleOpenDrawer}
+        />
+      )}
+
       {/* New Verdicts Floating Pill */}
       <NewVerdictsPill count={0} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+
 
       {/* Zone 2 — Verdict Feed (§7.1 Zone 2) */}
       {verdicts.length > 0 && (
