@@ -22,6 +22,7 @@ import {
   selectSortedVerdicts,
   selectVerdictCounts,
 } from "@/features/verdicts/selectors";
+import { useFeedKeyboard } from "@/hooks/useFeedKeyboard";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useVerdicts } from "@/hooks/useVerdicts";
 import { useVerdictFilters } from "@/hooks/useVerdictFilters";
@@ -31,7 +32,7 @@ export const ConsoleScreen: React.FC = () => {
   const navigate = useNavigate();
   const { verdictId } = useParams<{ verdictId?: string }>();
 
-  const { filters, isPaused, toggleStateFilter, setSort, clearFilters, hasActiveFilters } =
+  const { filters, isPaused, toggleStateFilter, setSort, clearFilters, hasActiveFilters, togglePaused } =
     useVerdictFilters();
 
   const [density, setDensity] = useLocalStorage<"comfortable" | "compact">("density", "comfortable");
@@ -44,10 +45,6 @@ export const ConsoleScreen: React.FC = () => {
   const sorted = selectSortedVerdicts(filtered, filters.sort);
   const counts = selectVerdictCounts(verdicts);
 
-  // Extract unique service names for dropdown filter
-  const services = Array.from(new Set(verdicts.map((v) => v.service_name)));
-
-  // Open / Close drawer routing helpers (§4.1)
   const handleOpenDrawer = (id: string) => {
     navigate(`/v/${encodeURIComponent(id)}`);
   };
@@ -55,6 +52,14 @@ export const ConsoleScreen: React.FC = () => {
   const handleCloseDrawer = () => {
     navigate("/");
   };
+
+  const { focusedIndex } = useFeedKeyboard({
+    verdicts: sorted,
+    onOpenDrawer: handleOpenDrawer,
+    onToggleStateFilter: toggleStateFilter,
+    onTogglePaused: togglePaused,
+  });
+
 
   // Keyboard shortcut listener for '?' modal (§7.1)
   useEffect(() => {
@@ -151,10 +156,12 @@ export const ConsoleScreen: React.FC = () => {
             verdicts={sorted}
             isLoading={isLoading}
             density={density}
+            focusedIndex={focusedIndex}
             onOpenDrawer={handleOpenDrawer}
             onClearFilters={clearFilters}
             hasActiveFilters={hasActiveFilters}
           />
+
         </div>
       )}
 
