@@ -36,10 +36,11 @@ export const StateBadge: React.FC<StateBadgeProps> = ({
       : "neutral";
 
   const leadingIcon = showIcon ? (
-    <IconComponent size={size === "sm" ? 12 : 14} aria-hidden="true" />
+    <IconComponent size={size === "sm" ? 12 : 14} aria-hidden={true} />
   ) : showDot ? (
     <StatusDot state={state} size={size === "sm" ? 6 : 8} label={meta.label} />
   ) : undefined;
+
 
   return (
     <Badge variant={variant} size={size} icon={leadingIcon} className={className}>

@@ -37,9 +37,10 @@ export const Card = forwardRef<HTMLElement, CardProps>(
       extraProps.href = href;
     }
     if (Component === "button" && onClick) {
-      extraProps.type = props.type || "button";
+      extraProps.type = (props as { type?: string }).type || "button";
       extraProps.onClick = onClick;
     }
+
 
     return (
       <Component

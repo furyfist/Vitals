@@ -1,16 +1,17 @@
+import type { LucideIcon } from "lucide-react";
 import { Activity, CircleCheck, CircleHelp, LoaderCircle, TriangleAlert } from "lucide-react";
-import type React from "react";
 import type { VerdictState } from "@/lib/api/types";
 
 export interface StateMeta {
   state: VerdictState | "ERROR";
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean }>;
+  icon: LucideIcon;
   dotColor: string;
   textColor: string;
   bgColor: string;
   borderColor: string;
 }
+
 
 export const STATE_META: Record<VerdictState | "ERROR", StateMeta> = {
   STEADY: {

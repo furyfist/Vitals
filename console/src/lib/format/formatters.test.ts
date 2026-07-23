@@ -36,4 +36,13 @@ describe("§13 Formatters", () => {
     expect(truncateId("4f2a91b8e301")).toBe("4f2a91…");
     expect(formatExcerpt("Hello world")).toBe('"Hello world"');
   });
+
+  it("formatRelativeTime formats timestamps relative to now", () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    expect(formatRelativeTime(nowSec)).toBe("now");
+    expect(formatRelativeTime(nowSec - 14)).toBe("14s ago");
+    expect(formatRelativeTime(nowSec - 180)).toBe("3m ago");
+    expect(formatRelativeTime(null)).toBe("—");
+  });
 });
+
