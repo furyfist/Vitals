@@ -1,0 +1,44 @@
+{
+  "name": "vitals-console",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && npm run check:budget",
+    "preview": "vite preview",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "check:budget": "node scripts/check-bundle-budget.js",
+    "lint:tokens": "node scripts/lint-tokens.js"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.28.0",
+    "lucide-react": "^0.359.0",
+    "motion": "^11.0.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.6.1",
+    "@playwright/test": "^1.42.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "axe-core": "^4.9.0",
+    "jsdom": "^24.0.0",
+    "msw": "^2.2.8",
+    "typescript": "^5.4.3",
+    "vite": "^5.1.6",
+    "vitest": "^1.4.0"
+  }
+}

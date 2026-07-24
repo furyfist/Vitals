@@ -1,0 +1,39 @@
+.dot {
+  display: inline-block;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+
+.size6 {
+  width: 6px;
+  height: 6px;
+}
+
+.size8 {
+  width: 8px;
+  height: 8px;
+}
+
+.size10 {
+  width: 10px;
+  height: 10px;
+}
+
+.size12 {
+  width: 12px;
+  height: 12px;
+}
+
+.pulse {
+  animation: livePulse 2000ms var(--ease-inout) infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}

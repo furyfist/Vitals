@@ -1,0 +1,114 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-instant) var(--ease-out),
+              border-color var(--dur-instant) var(--ease-out),
+              color var(--dur-instant) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+/* Sizes */
+.sizeSm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.sizeMd {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.sizeLg {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+/* Variants */
+.variantPrimary {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
+}
+
+.variantPrimary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.variantPrimary:active:not(:disabled) {
+  background-color: var(--color-accent-active);
+}
+
+.variantSecondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.variantSecondary:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+  border-color: var(--color-border-strong);
+}
+
+.variantGhost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+
+.variantGhost:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
+}
+
+.variantDanger {
+  background-color: var(--color-error-dot);
+  color: var(--color-text-inverse);
+  border-color: var(--color-error-dot);
+}
+
+
+.variantDanger:hover:not(:disabled) {
+  background-color: var(--color-error-text);
+}
+
+/* Disabled */
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

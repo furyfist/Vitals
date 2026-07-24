@@ -1,0 +1,84 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.label {
+  width: 88px;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  text-transform: capitalize;
+}
+
+.valueContainer {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.valueHero {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.valueCompact {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.trackHero {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background-color: var(--color-surface-inset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.trackCompact {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  background-color: var(--color-surface-inset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transform-origin: left;
+}
+
+.thresholdTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%; /* 3σ out of 6σ is 50% */
+  width: 1px;
+  background-color: var(--chart-3);
+  z-index: 2;
+}
+
+.trailingHint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}

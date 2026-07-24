@@ -1,0 +1,115 @@
+.rowContainer {
+  border-bottom: 1px solid var(--color-border-subtle);
+  background-color: var(--color-surface);
+  transition: background-color var(--dur-instant) var(--ease-out);
+}
+
+.rowContainer:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.focusedRow {
+  background-color: var(--color-surface-subtle);
+  border-left: 2px solid var(--color-accent);
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  cursor: pointer;
+  user-select: none;
+}
+
+.comfortable {
+  height: 44px;
+}
+
+.compact {
+  height: 36px;
+}
+
+.timeCol {
+  width: 72px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.stateWordCol {
+  width: 96px;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+}
+
+.sentenceCol {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sigmaCol {
+  width: 104px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.chevronIcon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--dur-base) var(--ease-out),
+              color var(--dur-instant) var(--ease-out);
+}
+
+.rowContainer:hover .chevronIcon {
+  color: var(--color-text-secondary);
+}
+
+.chevronRotated {
+  transform: rotate(180deg);
+}
+
+.expandedReceipt {
+  padding: var(--space-4) var(--space-6) var(--space-4) calc(72px + var(--space-4) * 2 + 8px);
+  background-color: var(--color-surface-subtle);
+  border-top: 1px dashed var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.receiptRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.receiptLabel {
+  width: 100px;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.receiptValue {
+  color: var(--color-text);
+}

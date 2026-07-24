@@ -56,17 +56,7 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
         try:
             path = self.path.split("?")[0]
 
-            if path == "/":
-                verdicts = self.store.list(limit=50)
-                latest = verdicts[0] if verdicts else None
-                scope_list = [s for s in self.scopes.values()]
-                snapshot = self.health.snapshot()
-                html = render_console_html(
-                    latest, verdicts, scope_list, snapshot, self.start_time
-                )
-                self._send_html(html)
-                return
-
+            # API endpoints
             if path == "/api/verdicts":
                 verdicts = self.store.list(limit=50)
                 self._send_json({"verdicts": [v.to_dict() for v in verdicts]})
@@ -106,10 +96,61 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
                 self._send_json(snapshot)
                 return
 
-            self._send_json({"error": "Not Found"}, status=404)
+            if path.startswith("/api/"):
+                self._send_json({"error": "Not Found"}, status=404)
+                return
+
+            # Static asset & SPA serving (§0.2)
+            import mimetypes
+            from pathlib import Path
+
+            static_dir = Path(__file__).parent / "static"
+            requested_file = static_dir / path.lstrip("/")
+
+            # Serve asset files from static/assets/ or other static assets (fonts, favicon)
+            if requested_file.is_file() and not requested_file.name.endswith(".html"):
+                mime_type, _ = mimetypes.guess_type(str(requested_file))
+                if not mime_type:
+                    mime_type = "application/octet-stream"
+                body = requested_file.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", mime_type)
+                self.send_header("Content-Length", str(len(body)))
+                if path.startswith("/assets/"):
+                    self.send_header(
+                        "Cache-Control", "public, max-age=31536000, immutable"
+                    )
+                else:
+                    self.send_header("Cache-Control", "public, max-age=3600")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
+            # SPA History Fallback: return index.html for all non-API paths
+            index_html_file = static_dir / "index.html"
+            if index_html_file.is_file():
+                body = index_html_file.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-cache")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
+            # Fallback if static/index.html not built yet
+            verdicts = self.store.list(limit=50)
+            latest = verdicts[0] if verdicts else None
+            scope_list = [s for s in self.scopes.values()]
+            snapshot = self.health.snapshot()
+            html = render_console_html(
+                latest, verdicts, scope_list, snapshot, self.start_time
+            )
+            self._send_html(html)
         except Exception as exc:
             logger.exception("Console error servicing %s", self.path)
             self._send_json({"error": str(exc)}, status=500)
+
 
 
 def create_console_server(

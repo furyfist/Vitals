@@ -11,3 +11,11 @@ dist/
 .pytest_cache/
 .ruff_cache/
 claude.md
+
+# Frontend
+console/node_modules/
+console/dist/
+console/.vite/
+console/coverage/
+console/playwright-report/
+console/test-results/
