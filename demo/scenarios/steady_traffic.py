@@ -19,7 +19,7 @@ QUERIES = [
 def send_query(url: str, prompt: str) -> None:
     req = urllib.request.Request(
         url,
-        data=f'{{"prompt": "{prompt}"}}'.encode("utf-8"),
+        data=f'{{"query": "{prompt}"}}'.encode("utf-8"),
         headers={"Content-Type": "application/json"},
         method="POST",
     )
@@ -32,7 +32,7 @@ def send_query(url: str, prompt: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Send steady baseline query traffic")
-    parser.add_argument("--url", default="http://localhost:8000/chat", help="RAG app URL")
+    parser.add_argument("--url", default="http://localhost:8002/ask", help="RAG app URL")
     parser.add_argument("--rate", type=float, default=2.0, help="Queries per second")
     parser.add_argument("--count", type=int, default=50, help="Total queries to send")
     args = parser.parse_args()

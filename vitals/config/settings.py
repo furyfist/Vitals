@@ -127,6 +127,8 @@ def _apply_env_overrides(cfg: VitalsConfig) -> None:
         cfg.emit.endpoint = v
     if v := os.getenv("VITALS_CONSOLE_PORT"):
         cfg.console.port = int(v)
+    if v := os.getenv("VITALS_CONSOLE_HOST"):
+        cfg.console.host = v
     if v := os.getenv("VITALS_CONSOLE_ENABLED"):
         cfg.console.enabled = v.lower() == "true"
     if v := os.getenv("VITALS_STORE_PATH"):

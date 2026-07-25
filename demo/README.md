@@ -34,12 +34,27 @@ Open the **Vitals Console** in your browser once a replay is running: [http://lo
 
 ### Prerequisites
 - Docker Desktop running.
-- **SigNoz** running on `localhost:4317` (OTLP gRPC) and UI on `localhost:8080`.
 - (Optional) `GROQ_API_KEY` in `demo/.env`.
 
-### 1. Launch Services
+### 1. Deploy SigNoz via Foundry
 
 ```bash
+cd deploy/signoz
+foundryctl cast -f casting.yaml -p ./pours
+```
+
+This brings up SigNoz (UI on `localhost:8080`, OTLP ingest on `localhost:4317`) and
+the MCP server (`localhost:8000`). See [deploy/signoz/README.md](../deploy/signoz/README.md).
+
+> **Before sending any traffic**, open [http://localhost:8080](http://localhost:8080)
+> and complete the signup wizard. The ingester only receives its real OTLP pipeline
+> config from the control plane *after* an org/admin account exists — until then it
+> looks like it's running, but every span and metric sent to it is silently dropped.
+
+### 2. Launch the App Stack
+
+```bash
+cd ../..                                            # back to repo root
 cp demo/.env.example demo/.env
 docker compose -f demo/compose.yaml up --build -d
 ```
@@ -47,17 +62,17 @@ docker compose -f demo/compose.yaml up --build -d
 Services started:
 | Service | Address | Role |
 |---|---|---|
-| `ragapp` | `:8000` | RAG service emitting `gen_ai` semantic spans |
-| `collector` | `:4317` | OTel Collector fanning out to SigNoz and Vitals |
+| `ragapp` | `:8002` | RAG service emitting `gen_ai` semantic spans (`:8000` is SigNoz's MCP server) |
+| `collector` | `:4317`\* | OTel Collector fanning out to SigNoz and Vitals (\*host 4319, see `demo/collector/config.yaml`) |
 | `vitals` | `:8787` | Vitals sidecar with Console and SigNoz OTLP emitter |
 
-### 2. Import SigNoz Assets
+### 3. Import SigNoz Assets
 
 Import in SigNoz UI (`Dashboards -> Import JSON` & `Alerts -> Import JSON`):
 - Dashboard: `assets/dashboards/release-compare.json`
 - Alert Rule: `assets/alerts/verdict-changed.json`
 
-### 3. Run Live Traffic Scenarios
+### 4. Run Live Traffic Scenarios
 
 ```bash
 # Steady traffic (Topic A)
@@ -74,7 +89,7 @@ python demo/scenarios/runaway_loop.py --rate 20 --duration 60
 python demo/scenarios/traffic_shift.py --rate 2 --count 50
 ```
 
-### 4. Reset Environment
+### 5. Reset Environment
 
 ```bash
 bash demo/scenarios/reset.sh

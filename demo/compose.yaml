@@ -15,8 +15,12 @@ services:
       # vitals emits OUT-OF-BAND directly to SigNoz ingest (D4), not via the collector.
       SIGNOZ_OTLP_ENDPOINT: "http://host.docker.internal:4317"
       VITALS_OTLP_GRPC_PORT: "4327"
+      # Console binds 0.0.0.0 inside the container so the host-published port reaches it
+      # (vitals.yaml's default 127.0.0.1 is correct for local, non-containerized runs).
+      VITALS_CONSOLE_HOST: "0.0.0.0"
     ports:
       - "4327:4327"
+      - "8787:8787"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -44,6 +48,10 @@ services:
       PROMPT_VERSION: "${PROMPT_VERSION:-v1}"
       SERVICE_VERSION: "${PROMPT_VERSION:-v1}"
     ports:
-      - "8000:8000"
+      # Host 8002 -> container 8000: SigNoz's MCP server (deploy/signoz) publishes
+      # host 8000, so this app moves off it. 8001 is also occupied on this machine
+      # by an unrelated container; pick a free host port and update this comment
+      # (and demo/scenarios/*.py --url defaults, demo/README.md) if 8002 collides too.
+      - "8002:8000"
     depends_on:
       - collector

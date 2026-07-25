@@ -33,7 +33,7 @@ def _fire(base_url: str, query: str) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--url", default="http://localhost:8000")
+    p.add_argument("--url", default="http://localhost:8002")
     p.add_argument("--rate", type=int, default=20, help="requests per second")
     p.add_argument("--duration", type=int, default=120, help="seconds")
     args = p.parse_args()
