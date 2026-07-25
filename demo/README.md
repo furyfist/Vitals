@@ -104,6 +104,35 @@ bash demo/scenarios/reset.sh
 
 ---
 
+## SigNoz feature walkthrough
+
+Verified against a live import of these exact assets (see commit history) — not
+just authored and hoped-for.
+
+### Query Builder
+
+`Metrics -> Explorer -> Query Builder` (or open any imported Vitals panel and hit
+"View in Query Builder"). Reconstruct the Overview dashboard's "Cost velocity" panel
+by hand:
+1. Metric: `vitals.cost.velocity`
+2. Aggregation: `avg`
+3. Group by: `service.name`, `gen_ai.request.model`
+
+With live traffic flowing (Quickstart B, step 4) this returns real USD/min series per
+service/model — e.g. a verified live query during testing returned
+`0.00152, 0.00159, 0 ...` for `ragapp` / `llama-3.3-70b-versatile` over a 5-minute
+window. Swap the metric for `gen_ai.evaluation.drift` or `vitals.verdict.behavior_sigma`
+to build the other panels the same way.
+
+### Live tail
+
+`Logs -> Live` (top-right toggle), filtered to `service.name = vitals`. Every scored
+response emits an eval log (`vitals eval scored: ...`) and every verdict transition
+emits a verdict log (`vitals.state`, `vitals.behavior_sigma`, trace-linked to the worst
+exemplar). Start a replay (Quickstart A) or live traffic (Quickstart B) with Live tail
+open to watch records stream in real time — this is the fastest way to show a judge the
+pipeline is actually alive rather than replaying a canned dashboard.
+
 ## Understanding the Vitals Console (`:8787`)
 
 - **Zone 1 (Hero Verdict Card)**: Shows current state (`WARMING`, `STEADY`, `CHANGED`, `INCONCLUSIVE`), behavior/cost sigmas (`+4.2σ`), falsifier line, and **worst + median evidence exemplars**.
