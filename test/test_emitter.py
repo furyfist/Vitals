@@ -100,7 +100,13 @@ def test_verdict_changed_alert_rule_format():
     assert data["alert"] == "Vitals: verdict changed"
     assert data["condition"]["op"] == ">="
     assert data["condition"]["target"] == 2  # CHANGED (2) or INCONCLUSIVE (3)
-    assert data["condition"]["compositeQuery"]["builder"]["queryData"][0]["aggregateAttribute"]["key"] == "vitals.verdict.state"
+    # v5 rule query schema (condition.compositeQuery.queries[].spec) — verified against a
+    # live SigNoz v0.133.0 instance via /api/v2/rules; the older builder.queryData shape
+    # is rejected outright ("must have at least one query").
+    assert (
+        data["condition"]["compositeQuery"]["queries"][0]["spec"]["aggregations"][0]["metricName"]
+        == "vitals.verdict.state"
+    )
 
     # Verify retired V1 rules are deleted
     assert not Path("assets/alerts/cost-velocity.json").exists()

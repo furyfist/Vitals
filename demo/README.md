@@ -68,9 +68,16 @@ Services started:
 
 ### 3. Import SigNoz Assets
 
-Import in SigNoz UI (`Dashboards -> Import JSON` & `Alerts -> Import JSON`):
-- Dashboard: `assets/dashboards/release-compare.json`
-- Alert Rule: `assets/alerts/verdict-changed.json`
+Import all three dashboards in SigNoz UI (`Dashboards -> New dashboard -> Import JSON`):
+- `assets/dashboards/overview.json`
+- `assets/dashboards/drift.json`
+- `assets/dashboards/release-compare.json`
+
+Alerts require at least one notification channel to exist first (`Alerts -> Notification
+Channels -> New` — any type, e.g. a webhook; it doesn't need to be a real reachable
+endpoint for the demo). Then import the alert rule (`Alerts -> New Alert Rule -> Import
+JSON`, selecting your channel when prompted):
+- `assets/alerts/verdict-changed.json`
 
 ### 4. Run Live Traffic Scenarios
 

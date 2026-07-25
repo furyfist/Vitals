@@ -1,7 +1,7 @@
 {
   "alert": "Vitals: verdict changed",
   "alertType": "METRIC_BASED_ALERT",
-  "description": "{{service.name}} {{service.version}} — VERDICT CHANGED\nbehavior {{vitals.behavior_sigma}}σ · cost {{vitals.cost_sigma}}σ\ncause: {{vitals.cause}} · subject: {{vitals.subject}} · n={{vitals.samples}}\nrunaway: {{vitals.runaway}}\nFull record: vitals verdict log, trace-linked.",
+  "description": "$service.name $service.version — VERDICT CHANGED. Sigma, cause, and exemplars are on the trace-linked vitals verdict log (Logs -> filter service.name=vitals, service.version=$service.version) — not carried on this metric alert.",
   "ruleType": "threshold_rule",
   "evalWindow": "1m0s",
   "frequency": "1m0s",
@@ -9,46 +9,28 @@
     "compositeQuery": {
       "queryType": "builder",
       "panelType": "graph",
-      "builder": {
-        "queryData": [
-          {
-            "dataSource": "metrics",
-            "queryName": "A",
-            "expression": "A",
+      "queries": [
+        {
+          "type": "builder_query",
+          "spec": {
+            "name": "A",
+            "signal": "metrics",
             "disabled": false,
-            "aggregateOperator": "max",
-            "aggregateAttribute": {
-              "key": "vitals.verdict.state",
-              "dataType": "float64",
-              "type": "Gauge",
-              "isColumn": true
-            },
-            "timeAggregation": "max",
-            "spaceAggregation": "max",
-            "filters": {
-              "op": "AND",
-              "items": []
-            },
-            "groupBy": [
+            "aggregations": [
               {
-                "key": "service.name",
-                "dataType": "string",
-                "type": "tag"
-              },
-              {
-                "key": "service.version",
-                "dataType": "string",
-                "type": "tag"
+                "metricName": "vitals.verdict.state",
+                "timeAggregation": "max",
+                "spaceAggregation": "max"
               }
             ],
-            "legend": "",
-            "reduceTo": "last",
-            "having": [],
+            "groupBy": [
+              { "name": "service.name" },
+              { "name": "service.version" }
+            ],
             "stepInterval": 60
           }
-        ],
-        "queryFormulas": []
-      }
+        }
+      ]
     },
     "op": ">=",
     "target": 2,
@@ -60,7 +42,7 @@
     "source": "vitals"
   },
   "annotations": {
-    "description": "{{service.name}} {{service.version}} — VERDICT CHANGED\nbehavior {{vitals.behavior_sigma}}σ · cost {{vitals.cost_sigma}}σ\ncause: {{vitals.cause}} · subject: {{vitals.subject}} · n={{vitals.samples}}\nrunaway: {{vitals.runaway}}\nFull record: vitals verdict log, trace-linked.",
-    "summary": "{{service.name}} {{service.version}} — VERDICT CHANGED"
+    "description": "$service.name $service.version — VERDICT CHANGED. Sigma, cause, and exemplars are on the trace-linked vitals verdict log (Logs -> filter service.name=vitals, service.version=$service.version) — not carried on this metric alert.",
+    "summary": "$service.name $service.version — VERDICT CHANGED"
   }
 }
