@@ -6,33 +6,27 @@ Every scenario in Vitals is 100% reproducible — either live through Docker Com
 
 ## Quickstart A — Instant Replay Scenarios (No Docker needed)
 
-Vitals includes a deterministic replay engine (`vitals replay <fixture>`) that replays pre-recorded OTLP spans through the full scoring and verdict engine.
+Vitals includes a deterministic replay engine (`vitals replay <fixture>`) that replays pre-recorded OTLP spans through the full scoring and verdict engine. `replay` stands up its own receiver, evaluator, and console in one process — **do not** run `vitals run` first; a second process binding the same ports (4327, 8787) will fail to start.
 
-### 1. Run Vitals Sidecar with Console Enabled
-
-```bash
-python -m vitals.main run --config vitals.yaml
-```
-
-Open the **Vitals Console** in your browser: [http://localhost:8787](http://localhost:8787)
-
-### 2. Replay Scenarios in a Second Terminal
+Run each scenario with `--config vitals.demo.yaml`, a lower-threshold config sized for these 45-55 span fixtures (`vitals.yaml`'s production thresholds need ~90 spans/version to ever clear warming — see the comment at the top of `vitals.demo.yaml`).
 
 ```bash
 # Scenario 1: Steady Baseline (Verdict: STEADY)
-python -m vitals.main replay demo/fixtures/01_steady_baseline.jsonl --speed 10.0
+python -m vitals.main replay demo/fixtures/01_steady_baseline.jsonl --speed 10.0 --config vitals.demo.yaml
 
-# Scenario 2: Release Regression (Verdict: CHANGED · Cause: RELEASE)
-python -m vitals.main replay demo/fixtures/02_release_regression.jsonl --speed 10.0
+# Scenario 2: Release Regression (Verdict: CHANGED)
+python -m vitals.main replay demo/fixtures/02_release_regression.jsonl --speed 10.0 --config vitals.demo.yaml
 
 # Scenario 3: Runaway Cost Loop (Verdict: CHANGED · Runaway: TRUE)
-python -m vitals.main replay demo/fixtures/03_runaway_loop.jsonl --speed 10.0
+python -m vitals.main replay demo/fixtures/03_runaway_loop.jsonl --speed 10.0 --config vitals.demo.yaml
 
 # Scenario 4: User Traffic Shift (Verdict: INCONCLUSIVE · Guard: INPUT_SHIFT)
-python -m vitals.main replay demo/fixtures/04_input_shift.jsonl --speed 10.0
+python -m vitals.main replay demo/fixtures/04_input_shift.jsonl --speed 10.0 --config vitals.demo.yaml
 ```
 
-Watch the **Hero Verdict Card** on `http://localhost:8787` update live with state colors, sigma meter bars, falsifier statements, and evidence exemplars!
+Open the **Vitals Console** in your browser once a replay is running: [http://localhost:8787](http://localhost:8787). Watch the **Hero Verdict Card** update live with state colors, sigma meter bars, falsifier statements, and evidence exemplars!
+
+> **Note on Scenario 2's cause label:** at accelerated replay speed the evaluator's real-time tick and the fixture's compressed virtual timestamps diverge, so the release-attribution window can miss and `cause` shows `unattributed` instead of `RELEASE` — the verdict still correctly reaches `CHANGED`. Attribution resolves correctly at `--speed 1.0` (real time, ~11 min) or in the live Quickstart B path below, which sends traffic in real time.
 
 ---
 
