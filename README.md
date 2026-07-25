@@ -57,4 +57,6 @@ vitals) and the demo run-of-show.
 
 See [STATUS.md](STATUS.md) for what's done and what's planned for V2.
 
+See [AI_DISCLOSURE.md](AI_DISCLOSURE.md) for AI tool use in building this project.
+
 Apache 2.0.
