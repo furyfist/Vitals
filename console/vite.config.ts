@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(__dirname, "../vitals/console/static"),
+    outDir: process.env.VERCEL ? "dist" : path.resolve(__dirname, "../vitals/console/static"),
     emptyOutDir: true,
     assetsDir: "assets",
     sourcemap: false,
