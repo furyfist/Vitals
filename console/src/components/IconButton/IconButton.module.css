@@ -1,0 +1,74 @@
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  user-select: none;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-instant) var(--ease-out),
+              border-color var(--dur-instant) var(--ease-out),
+              color var(--dur-instant) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.iconButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.sizeSm {
+  width: 28px;
+  height: 28px;
+}
+
+.sizeMd {
+  width: 32px;
+  height: 32px;
+}
+
+.sizeLg {
+  width: 40px;
+  height: 40px;
+}
+
+.variantPrimary {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.variantPrimary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+}
+
+.variantSecondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.variantSecondary:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.variantGhost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.variantGhost:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
+}
+
+.variantDanger {
+  background-color: var(--color-error-dot);
+  color: var(--color-text-inverse);
+}
+
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

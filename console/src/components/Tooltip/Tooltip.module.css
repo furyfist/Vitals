@@ -1,0 +1,76 @@
+.triggerWrapper {
+  display: inline-flex;
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 100;
+  max-width: 260px;
+  padding: 6px 10px;
+  background-color: var(--color-surface-raised);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  white-space: normal;
+  word-break: break-word;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px) scale(0.96);
+  margin-bottom: 6px;
+}
+
+.top.visible {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px) scale(0.96);
+  margin-top: 6px;
+}
+
+.bottom.visible {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px) scale(0.96);
+  margin-right: 6px;
+}
+
+.left.visible {
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+.right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px) scale(0.96);
+  margin-left: 6px;
+}
+
+.right.visible {
+  transform: translateY(-50%) translateX(0) scale(1);
+}

@@ -1,0 +1,22 @@
+import { useEffect, useState } from "react";
+
+export function useVisibility(): boolean {
+  const [isVisible, setIsVisible] = useState<boolean>(() =>
+    typeof document !== "undefined" ? !document.hidden : true
+  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  return isVisible;
+}

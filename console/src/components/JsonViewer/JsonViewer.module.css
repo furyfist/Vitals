@@ -1,0 +1,65 @@
+.container {
+  background-color: var(--color-surface-inset);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-x: auto;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  padding-left: 14px;
+}
+
+.rootNode {
+  padding-left: 0;
+}
+
+.line {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: 0;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.toggleCollapsed {
+  transform: rotate(-90deg);
+}
+
+.key {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.string {
+  color: var(--chart-2);
+}
+
+.number {
+  color: var(--chart-1);
+}
+
+.boolean, .null {
+  color: var(--chart-5);
+}
+
