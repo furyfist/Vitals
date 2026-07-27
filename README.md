@@ -6,6 +6,8 @@ Built for the **Agents of SigNoz Hackathon** (WeMakeDevs × SigNoz), Track 1: AI
 
 Observability has three signals for machines: traces, metrics, logs. AI systems need two more that no OTel-native platform provides today: **what a response costs right now** and **whether the answer is any good**. Vitals is an OTel-native sidecar that sits next to your existing SigNoz pipeline, scores every `gen_ai` span deterministically and out of the request path, and emits both signals back into SigNoz as native metrics, dashboards, and alerts.
 
+[![Vitals demo video](https://img.youtube.com/vi/6789BQ-O2RY/maxresdefault.jpg)](https://www.youtube.com/watch?v=6789BQ-O2RY)
+
 ---
 
 ## The Problem
@@ -111,10 +113,6 @@ Every scenario in Vitals is reproducible two ways: instantly via a deterministic
 | User traffic topic shift | `04_input_shift.jsonl` | `INCONCLUSIVE` · input shift |
 
 The **live** path runs an actual Groq-backed RAG app behind a real OTel Collector and a real SigNoz instance (deployed via Foundry), with scenario scripts that generate steady traffic, deploy a deliberately poisoned prompt version, simulate a runaway agent loop, and shift query topics, so a judge can watch verdicts and dashboard panels update from real traffic, not a canned replay. See [demo/README.md](demo/README.md) for the full run-of-show, including a SigNoz Query Builder walkthrough and a live-log-tail demo that's the fastest way to prove the pipeline is actually alive.
-
-### Demo Video
-
-[![Vitals demo video](https://img.youtube.com/vi/6789BQ-O2RY/maxresdefault.jpg)](https://www.youtube.com/watch?v=6789BQ-O2RY)
 
 ---
 
