@@ -112,6 +112,10 @@ Every scenario in Vitals is reproducible two ways: instantly via a deterministic
 
 The **live** path runs an actual Groq-backed RAG app behind a real OTel Collector and a real SigNoz instance (deployed via Foundry), with scenario scripts that generate steady traffic, deploy a deliberately poisoned prompt version, simulate a runaway agent loop, and shift query topics, so a judge can watch verdicts and dashboard panels update from real traffic, not a canned replay. See [demo/README.md](demo/README.md) for the full run-of-show, including a SigNoz Query Builder walkthrough and a live-log-tail demo that's the fastest way to prove the pipeline is actually alive.
 
+### Demo Video
+
+[![Vitals demo video](https://img.youtube.com/vi/6789BQ-O2RY/maxresdefault.jpg)](https://www.youtube.com/watch?v=6789BQ-O2RY)
+
 ---
 
 ## Tech Stack
@@ -209,16 +213,16 @@ Full walkthrough, including SigNoz signup, dashboard/alert import, and all four 
 
 ## Screenshots
 
-**SigNoz Dashboard** — cost velocity, cumulative burn, quality score/drift, and Vitals health, all as native SigNoz panels.
+**SigNoz Dashboard**: cost velocity, cumulative burn, quality score/drift, and Vitals health, all as native SigNoz panels.
 ![SigNoz Dashboard](docs/images/signoz.png)
 
-**Vitals Console** — sigma drift trend and live verdict feed.
+**Vitals Console**: sigma drift trend and live verdict feed.
 ![Vitals Console](docs/images/vitals_dashboard.png)
 
-**Verdict detail** — judgment, evidence, and timing drill-down for a single verdict.
+**Verdict detail**: judgment, evidence, and timing drill-down for a single verdict.
 ![Verdict detail](docs/images/vitals_incident.png)
 
-**Verdict feed** — historical feed of scored verdicts.
+**Verdict feed**: historical feed of scored verdicts.
 ![Verdict feed](docs/images/vitals_verdict.png)
 
 ---

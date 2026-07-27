@@ -1,5 +1,6 @@
 import type React from "react";
 import { RouterProvider } from "react-router-dom";
+import DockerBanner from "./components/DockerBanner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AnnouncerProvider } from "./providers/AnnouncerProvider";
 import { QueryProvider } from "./providers/QueryProvider";
@@ -13,6 +14,7 @@ export const App: React.FC = () => {
       <AnnouncerProvider>
         <QueryProvider>
           <ToastProvider>
+            <DockerBanner />
             <RouterProvider router={router} />
           </ToastProvider>
         </QueryProvider>
