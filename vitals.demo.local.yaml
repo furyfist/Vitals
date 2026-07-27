@@ -1,0 +1,54 @@
+# Local-replay variant of vitals.demo.yaml — identical thresholds, different ports so
+# `python -m vitals.main replay ...` can run on the host alongside the demo-vitals-1
+# Docker container (which holds 4327/8787). Not used by tests or `vitals run` in production.
+
+receiver:
+  grpc_port: 4337
+  http_port: 4338
+  host: "0.0.0.0"
+
+emit:
+  endpoint: "http://localhost:4317"
+  export_interval_ms: 5000
+  queue_max: 10000
+
+cost:
+  price_table: "vitals/cost/prices.yaml"
+  velocity_window_s: 60
+
+quality:
+  enabled: true
+  baseline_window: 8
+  drift_threshold: 0.10
+  cusum_k: 0.5
+  cusum_h: 5.0
+  db_path: "vitals.db"
+  weight_drift: 0.6
+  weight_consistency: 0.2
+  weight_stability: 0.2
+
+verdict:
+  enabled: true
+  evaluate_interval_s: 2      # fast ticks so the fixture's short wall-clock run gets several
+  window_s: 300
+  window_max: 500
+  min_samples: 8
+  sigma_threshold: 3.0
+  consecutive_ticks: 1        # demo-only: skip the 2-tick hysteresis so CHANGED lands promptly
+  min_hold_s: 120
+  heartbeat_s: 60
+  runaway_ratio: 20.0
+  attribution_window_s: 300
+  length_caveat_pct: 0.25
+  calibration_samples: 8
+  exemplars_worst: 2
+  exemplars_median: 1
+
+console:
+  enabled: true
+  host: 127.0.0.1
+  port: 8797
+
+store:
+  path: vitals.db
+  retain_verdicts: 1000

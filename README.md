@@ -209,11 +209,17 @@ Full walkthrough, including SigNoz signup, dashboard/alert import, and all four 
 
 ## Screenshots
 
-![Architecture](docs/images/architecture.png)
+**SigNoz Dashboard** — cost velocity, cumulative burn, quality score/drift, and Vitals health, all as native SigNoz panels.
+![SigNoz Dashboard](docs/images/signoz.png)
 
-![SigNoz Dashboard](docs/images/dashboard.png)
+**Vitals Console** — sigma drift trend and live verdict feed.
+![Vitals Console](docs/images/vitals_dashboard.png)
 
-![Vitals Console](docs/images/console.png)
+**Verdict detail** — judgment, evidence, and timing drill-down for a single verdict.
+![Verdict detail](docs/images/vitals_incident.png)
+
+**Verdict feed** — historical feed of scored verdicts.
+![Verdict feed](docs/images/vitals_verdict.png)
 
 ---
 
